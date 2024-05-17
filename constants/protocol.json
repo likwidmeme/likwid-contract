@@ -1,0 +1,29 @@
+{
+  "Base": {
+    "vizingPad": "0x5D77b0c9855F44a8fbEf34E670e243E988682a82"
+  },
+  "Vizing": {
+    "vizingPad": "0x5D77b0c9855F44a8fbEf34E670e243E988682a82"
+  },
+  "Linea": {
+    "vizingPad": "0x5D77b0c9855F44a8fbEf34E670e243E988682a82"
+  },
+  "Scroll": {
+    "vizingPad": "0x523D8B6893D2D0Ce2B48E7964432ce19A2C641F2"
+  },
+  "Arbitrum": {
+    "vizingPad": "0xD725Bc299a232201984FEcb4FF106d84E894193f"
+  },
+  "Optimism": {
+    "vizingPad": "0x523D8B6893D2D0Ce2B48E7964432ce19A2C641F2"
+  },
+  "zkEVM": {
+    "vizingPad": "0x5D77b0c9855F44a8fbEf34E670e243E988682a82"
+  },
+  "Blast": {
+    "vizingPad": "0x176BAa4c563985209c159F3ecC7D9F09d3914dE0"
+  },
+  "Bob": {
+    "vizingPad": "0x5D77b0c9855F44a8fbEf34E670e243E988682a82"
+  }
+}
