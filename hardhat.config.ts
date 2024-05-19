@@ -80,10 +80,20 @@ const config: HardhatUserConfig = {
   etherscan: {
     enabled: true,
     apiKey: {
+      Base: getScanApiKey('Base'),
       Arbitrum: getScanApiKey('Arbitrum'),
       Vizing: 'NULL',
+      Bob: 'NULL',
     },
     customChains: [
+      {
+        network: 'Base',
+        chainId: 8453,
+        urls: {
+          apiURL: 'https://api.basescan.org/api',
+          browserURL: 'https://basescan.org/',
+        },
+      },
       {
         network: 'Arbitrum',
         chainId: 42161,
@@ -98,6 +108,14 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: 'https://explorer-api.vizing.com/api',
           browserURL: 'https://explorer.vizing.com/',
+        },
+      },
+      {
+        network: 'Bob',
+        chainId: 60808,
+        urls: {
+          apiURL: 'https://explorer.gobob.xyz/api',
+          browserURL: 'https://explorer.gobob.xyz/',
         },
       },
     ],

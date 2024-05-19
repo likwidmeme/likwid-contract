@@ -22,6 +22,9 @@
     "devAdapter": "npx hardhat devAdapter --network Base && npx hardhat devAdapter --network Vizing && npx hardhat devAdapter --network Linea && npx hardhat devAdapter --network Scroll && npx hardhat devAdapter --network Optimism && npx hardhat devAdapter --network Arbitrum && npx hardhat devAdapter --network zkEVM && npx hardhat devAdapter --network Blast && npx hardhat devAdapter --network Bob",
   
     "verify:slave:Arbitrum": "npx hardhat  devSlaveVerify --network Arbitrum",
+    "verify:slave:Base": "npx hardhat  devSlaveVerify --network Base",
+    "verify:slave:Bob": "npx hardhat  devSlaveVerify --network Bob",
+
     "verify:master": "npx hardhat devMasterVerify --network Vizing --show-stack-traces",
     "flatten:TokenMaster": "npx hardhat flatten contracts/TokenMaster.sol>flatten/TokenMaster.sol",
     "flatten:TokenSlave": "npx hardhat flatten contracts/TokenSlave.sol>flatten/TokenSlave.sol"
