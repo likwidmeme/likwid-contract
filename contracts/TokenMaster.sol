@@ -7,5 +7,5 @@ contract TokenMaster is MasterTokenBase {
     constructor(
         address _vizingPad,
         uint64 _masterChainId
-    ) MasterTokenBase("Token Name", "TNT", _vizingPad, address(0), _masterChainId, 1716480000) {}
+    ) MasterTokenBase("Orbit Guy", "ORBGUY", _vizingPad, address(0), _masterChainId, 1716480000) {}
 }
