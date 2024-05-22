@@ -82,6 +82,11 @@ const config: HardhatUserConfig = {
     apiKey: {
       Base: getScanApiKey('Base'),
       Arbitrum: getScanApiKey('Arbitrum'),
+      Linea: getScanApiKey('Linea'),
+      Scroll: getScanApiKey('Scroll'),
+      Blast: getScanApiKey('Blast'),
+      Optimism: getScanApiKey('Optimism'),
+      zkEVM: getScanApiKey('zkEVM'),
       Vizing: 'NULL',
       Bob: 'NULL',
     },
@@ -100,6 +105,46 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: 'https://api.arbiscan.io/api',
           browserURL: 'https://arbiscan.io/',
+        },
+      },
+      {
+        network: 'Linea',
+        chainId: 59144,
+        urls: {
+          apiURL: 'https://api.lineascan.build/api',
+          browserURL: 'https://lineascan.build/',
+        },
+      },
+      {
+        network: 'Scroll',
+        chainId: 534352,
+        urls: {
+          apiURL: 'https://api.scrollscan.com/api',
+          browserURL: 'https://scrollscan.com/',
+        },
+      },
+      {
+        network: 'Blast',
+        chainId: 81457,
+        urls: {
+          apiURL: 'https://api.blastscan.io/api',
+          browserURL: 'https://blastscan.io/',
+        },
+      },
+      {
+        network: 'Optimism',
+        chainId: 10,
+        urls: {
+          apiURL: 'https://api-optimistic.etherscan.io/api',
+          browserURL: 'https://optimistic.etherscan.io/',
+        },
+      },
+      {
+        network: 'zkEVM',
+        chainId: 1101,
+        urls: {
+          apiURL: 'https://api-zkevm.polygonscan.com/api',
+          browserURL: 'https://zkevm.polygonscan.com/',
         },
       },
       {

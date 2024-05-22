@@ -24,6 +24,12 @@
     "verify:slave:Arbitrum": "npx hardhat  devSlaveVerify --network Arbitrum",
     "verify:slave:Base": "npx hardhat  devSlaveVerify --network Base",
     "verify:slave:Bob": "npx hardhat  devSlaveVerify --network Bob",
+    "verify:slave:Linea": "npx hardhat  devSlaveVerify --network Linea",
+    "verify:slave:Scroll": "npx hardhat  devSlaveVerify --network Scroll",
+    "verify:slave:Blast": "npx hardhat  devSlaveVerify --network Blast",
+    "verify:slave:Optimism": "npx hardhat  devSlaveVerify --network Optimism",
+    "verify:slave:zkEVM": "npx hardhat  devSlaveVerify --network zkEVM",
+
 
     "verify:master": "npx hardhat devMasterVerify --network Vizing --show-stack-traces",
     "flatten:TokenMaster": "npx hardhat flatten contracts/TokenMaster.sol>flatten/TokenMaster.sol",
