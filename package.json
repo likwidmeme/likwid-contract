@@ -30,6 +30,7 @@
     "verify:slave:Optimism": "npx hardhat  devSlaveVerify --network Optimism",
     "verify:slave:zkEVM": "npx hardhat  devSlaveVerify --network zkEVM",
 
+    "devSupply": "npx hardhat devSupply --network Vizing && npx hardhat devSupply --network Base  && npx hardhat devSupply --network Linea && npx hardhat devSupply --network Scroll && npx hardhat devSupply --network Optimism && npx hardhat devSupply --network Arbitrum && npx hardhat devSupply --network zkEVM && npx hardhat devSupply --network Blast && npx hardhat devSupply --network Bob",
 
     "verify:master": "npx hardhat devMasterVerify --network Vizing --show-stack-traces",
     "flatten:TokenMaster": "npx hardhat flatten contracts/TokenMaster.sol>flatten/TokenMaster.sol",
