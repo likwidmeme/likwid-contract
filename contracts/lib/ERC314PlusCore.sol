@@ -43,12 +43,13 @@ abstract contract ERC314PlusCore is ERC20, Ownable, ReentrancyGuard, VizingOmni,
     event MessageReceived(uint64 _srcChainId, address _srcAddress, uint value, bytes _payload);
     event PongfeeFailed(uint64 _srcChainId, address _srcAddress, uint8 _action, uint _pongFee, uint _expectPongFee);
     event Launch(
-        address indexed _sender,
-        uint _native,
-        uint _token,
-        uint _presaleToken,
-        uint _refundNative,
-        address _airdropAddr
+        uint earmarkedSupply,
+        uint earmarkedNative,
+        uint presaleRefundRatio,
+        uint presaleSupply,
+        uint presaleNative,
+        uint omniSupply,
+        uint presaleAccumulate
     );
     event Swap(address indexed sender, uint amount0In, uint amount1In, uint amount0Out, uint amount1Out);
     event AssetLocked(ActionType _action, uint64 _srcChainId, address _owner, uint _lockedNative, uint _lockedToken);

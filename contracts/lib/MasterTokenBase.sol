@@ -102,10 +102,8 @@ contract MasterTokenBase is ERC314PlusCore {
             if(amountIn >= earmarkedAmount){
                 // payable(feeAddress).transfer(amountIn - earmarkedAmount);                
                 transferNative(feeAddress, amountIn - earmarkedAmount);
-                
                 earmarkedSupply = _totalSupply * earmarked;
-                earmarkedNative = amountIn;
-
+                earmarkedNative = earmarkedAmount;
                 presaleRefundRatio = (presaleAccumulate-_launchFunds)/presaleAccumulate;
                 presaleSupply = _totalSupply * presale;
                 omniSupply = _totalSupply;
@@ -116,21 +114,9 @@ contract MasterTokenBase is ERC314PlusCore {
 
                 presaleNative = (presaleAccumulate * (1 ether - presaleRefundRatio)) / 1 ether;
                 claimDebitAmount = DebitAmount(presaleAccumulate - presaleNative, presaleSupply);
-            } else {
-                return;
-            }
-        }else{
-            return;
+                emit Launch(earmarkedSupply,earmarkedNative,presaleRefundRatio,presaleSupply,presaleNative,omniSupply,presaleAccumulate);
+            } 
         }
-
-        emit Launch(
-            _msgSender(),
-            presaleNative,
-            omniSupply,
-            presaleSupply,
-            presaleAccumulate - presaleNative,
-            _airdropAddr
-        );
     }
 
     function launchToSlaveEstimateGas(uint64 dstChainId) public view virtual returns (uint pingFee) {
