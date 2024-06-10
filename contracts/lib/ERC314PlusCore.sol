@@ -6,11 +6,13 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {VizingOmni} from "@vizing/contracts/VizingOmni.sol";
 import {MessageTypeLib} from "@vizing/contracts/library/MessageTypeLib.sol";
+import "@openzeppelin/contracts/security/Pausable.sol";
+
 
 import "./ExcessivelySafeCall.sol";
 import "./NonblockingApp.sol";
 
-abstract contract ERC314PlusCore is ERC20, Ownable, ReentrancyGuard, VizingOmni, NonblockingApp {
+abstract contract ERC314PlusCore is ERC20, Ownable, ReentrancyGuard, VizingOmni, NonblockingApp, Pausable {
     using ExcessivelySafeCall for address;
 
     enum ActionType {
@@ -21,11 +23,21 @@ abstract contract ERC314PlusCore is ERC20, Ownable, ReentrancyGuard, VizingOmni,
         buyPing,
         buyPong,
         sellPing,
-        sellPong
+        sellPong,
+        crossPing
     }
     struct DebitAmount {
         uint native;
         uint token;
+    }
+    
+    function pause() external onlyOwner {
+        bool isPaused = paused() ;
+        if(isPaused) {
+            _unpause();
+        } else {
+            _pause();
+        }
     }
 
     event MessageReceived(uint64 _srcChainId, address _srcAddress, uint value, bytes _payload);
@@ -36,9 +48,12 @@ abstract contract ERC314PlusCore is ERC20, Ownable, ReentrancyGuard, VizingOmni,
         uint _token,
         uint _presaleToken,
         uint _refundNative,
-        address _feeAddr
+        address _airdropAddr
     );
     event Swap(address indexed sender, uint amount0In, uint amount1In, uint amount0Out, uint amount1Out);
+    event AssetLocked(ActionType _action, uint64 _srcChainId, address _owner, uint _lockedNative, uint _lockedToken);
+    event Deposited(uint64 _srcChainId, address _sender, uint _native);
+    event Claimed(uint64 _srcChainId, address _sender, address _to, uint _native, uint _token);
 
     uint64 public immutable override minArrivalTime;
     uint64 public immutable override maxArrivalTime;
@@ -47,16 +62,41 @@ abstract contract ERC314PlusCore is ERC20, Ownable, ReentrancyGuard, VizingOmni,
     bytes1 public immutable override defaultBridgeMode;
     address public immutable override selectedRelayer;
 
+    mapping(uint => mapping(address => uint)) public crossNonce;
+
     uint64 public masterChainId;
     bool public launched;
     uint public messageReceived;
-    address public feeAddress;
-
-    mapping(address => uint) public deposited; //local chain deposited address=>amount
-    mapping(address => bool) public claimed;
+    address public feeAddress = owner();
+    function setFeeAddress(address addr) public virtual onlyOwner {
+        feeAddress = addr;
+    }
 
     uint MAX_INT = 2 ** 256 - 1;
+    uint public nativeMax = 5 ether;
+    function setNativeMax(uint amount) public virtual onlyOwner {
+        nativeMax = amount;
+    }
 
+    uint public nativeMin = 0.0001 ether;
+    function setNativeMin(uint amount) public virtual onlyOwner {
+        nativeMin = amount;
+    }
+
+    uint public tokenMin = 1 ether;
+    function setTokenMin(uint amount) public virtual onlyOwner {
+        tokenMin = amount;
+    }
+    uint public launchTime = block.timestamp + 259200;
+    function setLaunchTime(uint launchTime_) public virtual onlyOwner {
+        launchTime = launchTime_;
+    }
+    function launchIsEnd() public view returns (bool)  {
+        return block.timestamp >= launchTime;
+    }
+    function nowTime() public view returns (uint)  {
+        return block.timestamp;
+    }
     constructor(
         string memory _name,
         string memory _symbol,
@@ -75,7 +115,7 @@ abstract contract ERC314PlusCore is ERC20, Ownable, ReentrancyGuard, VizingOmni,
         uint value,
         bytes memory params
     ) public view virtual returns (uint) {
-        bytes memory message = PacketMessage(
+        bytes memory message = _packetMessage(
             defaultBridgeMode,
             dstContract,
             maxGasLimit,
@@ -93,7 +133,7 @@ abstract contract ERC314PlusCore is ERC20, Ownable, ReentrancyGuard, VizingOmni,
         bytes memory params,
         address sender
     ) internal virtual {
-        bytes memory message = PacketMessage(
+        bytes memory message = _packetMessage(
             defaultBridgeMode,
             dstContract,
             maxGasLimit,
@@ -124,20 +164,21 @@ abstract contract ERC314PlusCore is ERC20, Ownable, ReentrancyGuard, VizingOmni,
         uint64 srcChainId,
         address sender,
         address target,
-        uint amount
+        uint amount,
+        uint nonce
     ) internal virtual {
         revert NotImplement();
     }
 
-    function master_claim(uint pongFee, uint64 srcChainId, address sender, address target) internal virtual {
+    function master_claim(uint pongFee, uint64 srcChainId, address sender, address target,uint nonce) internal virtual {
         revert NotImplement();
     }
 
-    function master_buy(uint pongFee, uint64 srcChainId, address sender, address target, uint native) internal virtual {
+    function master_buy(uint pongFee, uint64 srcChainId, address sender, address target, uint native,uint nonce ) internal virtual {
         revert NotImplement();
     }
 
-    function master_sell(uint pongFee, uint64 srcChainId, address sender, address target, uint token) internal virtual {
+    function master_sell(uint pongFee, uint64 srcChainId, address sender, address target, uint token,uint nonce) internal virtual {
         revert NotImplement();
     }
 
@@ -145,19 +186,41 @@ abstract contract ERC314PlusCore is ERC20, Ownable, ReentrancyGuard, VizingOmni,
         revert NotImplement();
     }
 
-    function slave_deposit(uint64 srcChainId, address sender, address target, uint amount) internal virtual {
+    function slave_deposit(uint64 srcChainId, address sender, address target, uint amount,uint nonce) internal virtual {
         revert NotImplement();
     }
 
-    function slave_claim(uint64 srcChainId, address sender, address target, uint native, uint token) internal virtual {
+    function slave_claim(uint64 srcChainId, address sender, address target, uint native, uint token,uint nonce) internal virtual {
         revert NotImplement();
     }
 
-    function slave_buy(uint64 srcChainId, address sender, address target, uint native, uint token) internal virtual {
+    function slave_buy(uint64 srcChainId, address sender, address target, uint native, uint token,uint nonce) internal virtual {
         revert NotImplement();
     }
 
-    function slave_sell(uint64 srcChainId, address sender, address target, uint native, uint token) internal virtual {
+    function slave_sell(uint64 srcChainId, address sender, address target, uint native, uint token,uint nonce) internal virtual {
+        revert NotImplement();
+    }
+
+    function master_cross(
+        uint64 srcChainId,
+        address sender,
+        uint64 dstChainId,
+        address to,
+        uint token,
+        uint nonce
+    ) internal virtual {
+        revert NotImplement();
+    }
+
+    function slave_cross(
+        uint64 srcChainId,
+        address sender,
+        uint64 dstChainId,
+        address to,
+        uint token,
+        uint nonce
+    ) internal virtual {
         revert NotImplement();
     }
 
@@ -169,17 +232,20 @@ abstract contract ERC314PlusCore is ERC20, Ownable, ReentrancyGuard, VizingOmni,
         bytes memory params
     ) internal virtual {
         if (action == uint8(ActionType.deposit)) {
-            (address target, uint amount) = abi.decode(params, (address, uint));
-            master_deposit(pongFee, srcChainId, sender, target, amount);
+            (uint nonce ,address target, uint amount) = abi.decode(params, (uint, address, uint));
+            master_deposit(pongFee, srcChainId, sender, target, amount,nonce);
         } else if (action == uint8(ActionType.claimPing)) {
-            address target = abi.decode(params, (address));
-            master_claim(pongFee, srcChainId, sender, target);
+            (uint nonce ,address target) = abi.decode(params, (uint,address));
+            master_claim(pongFee, srcChainId, sender, target,nonce);
         } else if (action == uint8(ActionType.buyPing)) {
-            (address target, uint native) = abi.decode(params, (address, uint));
-            master_buy(pongFee, srcChainId, sender, target, native);
+            (uint nonce ,address target, uint native) = abi.decode(params, (uint,address, uint));
+            master_buy(pongFee, srcChainId, sender, target, native,nonce);
         } else if (action == uint8(ActionType.sellPing)) {
-            (address target, uint token) = abi.decode(params, (address, uint));
-            master_sell(pongFee, srcChainId, sender, target, token);
+            (uint nonce,address target, uint token) = abi.decode(params, (uint,address, uint));
+            master_sell(pongFee, srcChainId, sender, target, token,nonce);
+        } else if (action == uint8(ActionType.crossPing)) {
+            (uint nonce,uint64 chainid, address to, uint token) = abi.decode(params, (uint,uint64, address, uint));
+            master_cross(srcChainId, sender, chainid, to, token,nonce);
         } else revert NotImplement();
     }
 
@@ -191,19 +257,22 @@ abstract contract ERC314PlusCore is ERC20, Ownable, ReentrancyGuard, VizingOmni,
         bytes memory params
     ) internal virtual {
         if (action == uint8(ActionType.deposit)) {
-            (address target, uint amount) = abi.decode(params, (address, uint));
-            slave_deposit(srcChainId, sender, target, amount);
+            (uint nonce,address target, uint amount) = abi.decode(params, (uint,address, uint));
+            slave_deposit(srcChainId, sender, target, amount,nonce);
         } else if (action == uint8(ActionType.claimPong)) {
-            (address target, uint native, uint token) = abi.decode(params, (address, uint, uint));
-            slave_claim(srcChainId, sender, target, native, token);
+            (uint nonce,address target, uint native, uint token) = abi.decode(params, (uint, address, uint, uint));
+            slave_claim(srcChainId, sender, target, native, token,nonce);
         } else if (action == uint8(ActionType.buyPong)) {
-            (address target, uint native, uint token) = abi.decode(params, (address, uint, uint));
-            slave_buy(srcChainId, sender, target, native, token);
+            (uint nonce,address target, uint native, uint token) = abi.decode(params, (uint,address, uint, uint));
+            slave_buy(srcChainId, sender, target, native, token,nonce);
         } else if (action == uint8(ActionType.sellPong)) {
-            (address target, uint token, uint native) = abi.decode(params, (address, uint, uint));
-            slave_sell(srcChainId, sender, target, native, token);
+            (uint nonce,address target, uint token, uint native) = abi.decode(params, (uint,address, uint, uint));
+            slave_sell(srcChainId, sender, target, native, token,nonce);
         } else if (action == uint8(ActionType.launch)) {
             slave_launch(srcChainId, sender);
+        } else if (action == uint8(ActionType.crossPing)) {
+            (uint nonce,uint64 chainid, address to, uint token) = abi.decode(params, (uint,uint64, address, uint));
+            slave_cross(srcChainId, sender, chainid, to, token,nonce);
         } else revert NotImplement();
     }
 
@@ -263,21 +332,19 @@ abstract contract ERC314PlusCore is ERC20, Ownable, ReentrancyGuard, VizingOmni,
 
         (uint value, uint sendToFee) = _computePongValueWithOutPongFee(action, srcChainId, pongFee, params);
         uint callValue = pongFee + value - sendToFee;
-        if (sendToFee > 0) payable(feeAddress).transfer(sendToFee);
+        if (sendToFee > 0)
+            transferNative(feeAddress, sendToFee);
         (bool success, bytes memory reason) = _callSelf(srcChainId, sender, action, pongFee, callValue, params);
         if (!success) {
             _storeFailedMessage(srcChainId, sender, message, reason, callValue);
         }
+        require(success, "cross-chain failed");
     }
-
-    //---- interface ----
-    function deposit(uint pongFee, uint amount) public payable virtual;
-
-    function claim(uint pongFee) public payable virtual;
-
-    function swapExactETHForTokens(uint pongFee, address to, uint deadline) external payable virtual;
-
-    function swapExactTokensForETH(uint pongFee, uint amountIn, address to, uint deadline) external payable virtual;
+    
+    function transferNative(address to, uint amount) internal {
+        (bool success, ) = to.call{value: amount}("");
+        require(success, "Transfer failed.");
+    }
 
     function _transfer(address from, address to, uint256 amount) internal virtual override {
         if (_msgSender() != address(this) && to == address(this)) {
@@ -296,46 +363,59 @@ abstract contract ERC314PlusCore is ERC20, Ownable, ReentrancyGuard, VizingOmni,
     */
 
     function _depositPingPongSignature(
+        uint nonce,
         address target,
         uint pongFee,
         uint amount
     ) internal view virtual returns (bytes memory) {
-        return abi.encode(uint8(ActionType.deposit), pongFee, abi.encode(target, amount));
+        return abi.encode(uint8(ActionType.deposit), pongFee, abi.encode(nonce,target, amount));
     }
 
-    function _claimPingSignature(address target, uint pongFee) internal view virtual returns (bytes memory) {
-        return abi.encode(uint8(ActionType.claimPing), pongFee, abi.encode(target));
+    function _claimPingSignature(uint nonce,address target, uint pongFee) internal view virtual returns (bytes memory) {
+        return abi.encode(uint8(ActionType.claimPing), pongFee, abi.encode(nonce,target));
     }
 
     function _claimPongSignature(
+        uint nonce,
         address target,
         uint refund,
         uint amount
     ) internal view virtual returns (bytes memory) {
-        return abi.encode(uint8(ActionType.claimPong), 0, abi.encode(target, refund, amount));
+        return abi.encode(uint8(ActionType.claimPong), 0, abi.encode(nonce,target, refund, amount));
     }
 
     function _buyPingSignature(
+        uint nonce,
         address target,
         uint pongFee,
         uint amountIn
     ) internal view virtual returns (bytes memory) {
-        return abi.encode(uint8(ActionType.buyPing), pongFee, abi.encode(target, amountIn));
+        return abi.encode(uint8(ActionType.buyPing), pongFee, abi.encode(nonce,target, amountIn));
     }
 
-    function _buyPongSignature(address target, uint native, uint token) internal view virtual returns (bytes memory) {
-        return abi.encode(uint8(ActionType.buyPong), 0, abi.encode(target, native, token));
+    function _buyPongSignature(uint nonce,address target, uint native, uint token) internal view virtual returns (bytes memory) {
+        return abi.encode(uint8(ActionType.buyPong), 0, abi.encode(nonce,target, native, token));
     }
 
     function _sellPingSignature(
+        uint nonce,
         address target,
         uint pongFee,
         uint amountIn
     ) internal view virtual returns (bytes memory) {
-        return abi.encode(uint8(ActionType.sellPing), pongFee, abi.encode(target, amountIn));
+        return abi.encode(uint8(ActionType.sellPing), pongFee, abi.encode(nonce,target, amountIn));
     }
 
-    function _sellPongSignature(address target, uint native, uint token) internal view virtual returns (bytes memory) {
-        return abi.encode(uint8(ActionType.sellPong), 0, abi.encode(target, native, token));
+    function _sellPongSignature(uint nonce,address target, uint native, uint token) internal view virtual returns (bytes memory) {
+        return abi.encode(uint8(ActionType.sellPong), 0, abi.encode(nonce,target, native, token));
+    }
+
+    function _crossPingSignature(
+        uint nonce,
+        uint64 dstChainId,
+        address target,
+        uint token
+    ) internal view virtual returns (bytes memory) {
+        return abi.encode(uint8(ActionType.crossPing), 0, abi.encode(nonce,dstChainId, target, token));
     }
 }

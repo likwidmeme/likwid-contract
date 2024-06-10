@@ -8,6 +8,12 @@ contract MasterTokenBase is ERC314PlusCore {
     mapping(address => uint) public omniDeposited; //total chain deposited address=>amount
     mapping(uint64 => mapping(address => uint)) public slaveDeposited; //slave chain deposited chainId=>address=>amount
     mapping(uint64 => mapping(address => uint)) public slaveClaimed;
+
+    mapping(uint64 => mapping(address => uint)) public sdNonce;
+    mapping(uint64 => mapping(address => uint)) public scNonce;
+    mapping(uint64 => mapping(address => uint)) public sbNonce;
+    mapping(uint64 => mapping(address => uint)) public ssNonce;
+
     DebitAmount public claimDebitAmount;
     mapping(address => DebitAmount) public locked;
     DebitAmount public lockedDebitAmount;
@@ -16,26 +22,23 @@ contract MasterTokenBase is ERC314PlusCore {
     uint public presaleRefundRatio;
     uint public presaleSupply;
     uint public presaleNative;
+    uint public earmarkedSupply;
+    uint public earmarkedNative;
 
     uint public omniSupply;
-
-    uint public launchTime;
 
     constructor(
         string memory _name,
         string memory _symbol,
         address _vizingPad,
         address _defaultRelayer,
-        uint64 _masterChainId,
-        uint _launchTime
+        uint64 _masterChainId
     ) ERC314PlusCore(_name, _symbol, _vizingPad, _masterChainId) {
         minArrivalTime = 1 minutes;
         maxArrivalTime = 1 days;
         minGasLimit = 100000;
         maxGasLimit = 1000000;
         selectedRelayer = _defaultRelayer;
-
-        launchTime = _launchTime;
     }
 
     function setDstContract(uint64 chainId, address addr) public virtual onlyOwner {
@@ -46,10 +49,6 @@ contract MasterTokenBase is ERC314PlusCore {
         delete dstContracts[chainId];
     }
 
-    function setFeeAddress(address addr) public virtual onlyOwner {
-        feeAddress = addr;
-    }
-
     function verifySource(
         uint64 srcChainId,
         address srcContract
@@ -57,30 +56,80 @@ contract MasterTokenBase is ERC314PlusCore {
         return dstContracts[srcChainId] == srcContract;
     }
 
+    // function launch(
+    //     uint _totalSupply,
+    //     uint _presaleSupply,
+    //     uint _refundRatio,
+    //     address _feeAddr
+    // ) public virtual onlyOwner nonReentrant {
+    //     require(_totalSupply > presaleSupply && _refundRatio <= 1 ether);
+    //     require(!launched, "launched");
+    //     require(address(this).balance >= presaleAccumulate && presaleAccumulate > 0, "pool insufficient quantity");
+    //     presaleRefundRatio = _refundRatio;
+    //     presaleSupply = _presaleSupply;
+    //     omniSupply = _totalSupply;
+    //     feeAddress = _feeAddr;
+    //     launched = true;
+    //     _mint(address(this), _totalSupply);
+    //     presaleNative = (presaleAccumulate * (1 ether - presaleRefundRatio)) / 1 ether;
+    //     claimDebitAmount = DebitAmount(presaleAccumulate - presaleNative, presaleSupply);
+    //     emit Launch(
+    //         _msgSender(),
+    //         presaleNative,
+    //         omniSupply,
+    //         presaleSupply,
+    //         presaleAccumulate - presaleNative,
+    //         _feeAddr
+    //     );
+    // }
     function launch(
         uint _totalSupply,
-        uint _presaleSupply,
-        uint _refundRatio,
-        address _feeAddr
-    ) public virtual onlyOwner nonReentrant {
-        require(_totalSupply > presaleSupply && _refundRatio <= 1 ether);
+        uint _launchFunds,
+        uint _tokenomics,
+        address _airdropAddr
+    ) public payable virtual onlyOwner nonReentrant {
+        // require(_totalSupply > presaleSupply && _refundRatio <= 1 ether);
         require(!launched, "launched");
         require(address(this).balance >= presaleAccumulate && presaleAccumulate > 0, "pool insufficient quantity");
-        presaleRefundRatio = _refundRatio;
-        presaleSupply = _presaleSupply;
-        omniSupply = _totalSupply;
-        feeAddress = _feeAddr;
-        launched = true;
-        _mint(address(this), _totalSupply);
-        presaleNative = (presaleAccumulate * (1 ether - presaleRefundRatio)) / 1 ether;
-        claimDebitAmount = DebitAmount(presaleAccumulate - presaleNative, presaleSupply);
+        require(presaleAccumulate > _launchFunds, "pool insufficient quantity");
+        //50% pool locked in trading curve, 40% presale, 10% Earmarked presale for airdrop
+        if(_tokenomics == 2){
+            uint poolLocked = 0.5 ether;
+            uint presale = 0.4 ether;
+            uint earmarked = 0.1 ether;
+            uint earmarkedAmount = earmarked / presale * _launchFunds;
+            uint amountIn = msg.value;
+            if(amountIn >= earmarkedAmount){
+                // payable(feeAddress).transfer(amountIn - earmarkedAmount);                
+                transferNative(feeAddress, amountIn - earmarkedAmount);
+                
+                earmarkedSupply = _totalSupply * earmarked;
+                earmarkedNative = amountIn;
+
+                presaleRefundRatio = (presaleAccumulate-_launchFunds)/presaleAccumulate;
+                presaleSupply = _totalSupply * presale;
+                omniSupply = _totalSupply;
+                // feeAddress = _feeAddr;
+                launched = true;
+                _mint(address(this), _totalSupply);
+                _transfer(address(this), _airdropAddr, earmarkedSupply);
+
+                presaleNative = (presaleAccumulate * (1 ether - presaleRefundRatio)) / 1 ether;
+                claimDebitAmount = DebitAmount(presaleAccumulate - presaleNative, presaleSupply);
+            } else {
+                return;
+            }
+        }else{
+            return;
+        }
+
         emit Launch(
             _msgSender(),
             presaleNative,
             omniSupply,
             presaleSupply,
             presaleAccumulate - presaleNative,
-            _feeAddr
+            _airdropAddr
         );
     }
 
@@ -97,7 +146,9 @@ contract MasterTokenBase is ERC314PlusCore {
         require(launched, "need launched");
         require(dstContracts[dstChainId] != address(0), "need dest chain contract");
         uint pingFee = launchToSlaveEstimateGas(dstChainId);
-        if (msg.value > pingFee) payable(feeAddress).transfer(msg.value - pingFee);
+        if (msg.value > pingFee) 
+        // payable(feeAddress).transfer(msg.value - pingFee);
+        transferNative(feeAddress,msg.value - pingFee);
         paramsEmit2LaunchPad(
             pingFee,
             dstChainId,
@@ -116,6 +167,13 @@ contract MasterTokenBase is ERC314PlusCore {
         }
     }
 
+    function poolInitNative() public view returns (uint native) {
+        return presaleNative+earmarkedNative;
+    }
+    function poolInitSupply() public view returns (uint supply) {
+        return presaleSupply+earmarkedSupply;
+    }
+
     function _getAmountOut(
         uint reserveETH,
         uint reserveToken,
@@ -123,18 +181,18 @@ contract MasterTokenBase is ERC314PlusCore {
         bool _buy
     ) internal view returns (uint amount, uint fee) {
         if (value == 0) return (0, 0);
-        if (!launched || (launched && (presaleNative == 0 || reserveETH == 0 || reserveToken == 0))) return (0, 0);
+        if (!launched || (launched && (poolInitNative() == 0 || reserveETH == 0 || reserveToken == 0))) return (0, 0);
         if (_buy) {
-            if (value + reserveETH >= presaleNative) {
-                amount = reserveToken - (presaleNative * presaleSupply) / (value + reserveETH);
+            if (value + reserveETH >= poolInitNative()) {
+                amount = reserveToken - (poolInitNative() * poolInitSupply()) / (value + reserveETH);
             } else {
-                amount = (presaleSupply * value) / presaleNative;
+                amount = (poolInitSupply() * value) / poolInitNative();
             }
         } else {
-            if (value + reserveToken >= presaleSupply) {
-                amount = (presaleNative * value) / presaleSupply;
+            if (value + reserveToken >= poolInitSupply()) {
+                amount = (poolInitNative() * value) / poolInitSupply();
             } else {
-                amount = reserveETH - (presaleNative * presaleSupply) / (value + reserveToken);
+                amount = reserveETH - (poolInitNative() * poolInitSupply()) / (value + reserveToken);
             }
         }
         fee = (amount * 10) / 1000;
@@ -192,26 +250,32 @@ contract MasterTokenBase is ERC314PlusCore {
         uint64 srcChainId,
         address sender,
         address target,
-        uint amount
+        uint amount,
+        uint nonce
     ) internal virtual override {
+        require(nonce > sdNonce[srcChainId][sender], "nonce repetition");
+        sdNonce[srcChainId][sender] = nonce;
         require(!launched, "launched");
         require(dstContracts[srcChainId] != address(0), "need dest chain contract");
         require(msg.value == amount + pongFee, "value err.");
-        uint expectPongFee = depositPongEstimateGas(srcChainId, target, amount);
+        uint expectPongFee = depositPongEstimateGas(nonce,srcChainId, target, amount);
         if (pongFee < expectPongFee) {
             _creditLocked(sender, amount, 0);
             emit PongfeeFailed(srcChainId, sender, uint8(ActionType.deposit), pongFee, expectPongFee);
         } else {
-            if (pongFee > expectPongFee) payable(feeAddress).transfer(pongFee - expectPongFee);
+            if (pongFee > expectPongFee) 
+            // payable(feeAddress).transfer(pongFee - expectPongFee);
+                transferNative(feeAddress,pongFee - expectPongFee);
             _creditDeposit(srcChainId, target, amount);
             paramsEmit2LaunchPad(
                 expectPongFee,
                 srcChainId,
                 dstContracts[srcChainId],
                 0,
-                _depositPingPongSignature(target, uint(0), amount),
+                _depositPingPongSignature(nonce,target, uint(0), amount),
                 address(this)
             );
+            emit Deposited(srcChainId, sender, amount);
         }
     }
 
@@ -246,15 +310,19 @@ contract MasterTokenBase is ERC314PlusCore {
         } else return super._computePongValueWithOutPongFee(action, srcChainId, pongFee, params);
     }
 
-    function master_claim(uint pongFee, uint64 srcChainId, address sender, address target) internal virtual override {
+    function master_claim(uint pongFee, uint64 srcChainId, address sender, address target,uint nonce) internal virtual override {
+        require(nonce > scNonce[srcChainId][sender], "nonce repetition");
+        scNonce[srcChainId][sender] = nonce;
         require(launched, "unlaunched");
         require(dstContracts[srcChainId] != address(0), "need dest chain contract");
         require(slaveClaimed[srcChainId][target] == 0, "claimed");
-        uint expectPongFee = claimPongEstimateGas(srcChainId, target);
+        uint expectPongFee = claimPongEstimateGas(nonce,srcChainId, target);
         if (pongFee < expectPongFee) {
             emit PongfeeFailed(srcChainId, sender, uint8(ActionType.claimPing), pongFee, expectPongFee);
         } else {
-            if (pongFee > expectPongFee) payable(feeAddress).transfer(pongFee - expectPongFee);
+            if (pongFee > expectPongFee) 
+            // payable(feeAddress).transfer(pongFee - expectPongFee);
+                transferNative(feeAddress,pongFee - expectPongFee);
             (uint refund, uint amount) = _computeClaim(srcChainId, target);
             require(msg.value == pongFee + refund, "value err.");
             _burn(address(this), amount);
@@ -264,9 +332,10 @@ contract MasterTokenBase is ERC314PlusCore {
                 srcChainId,
                 dstContracts[srcChainId],
                 refund,
-                _claimPongSignature(target, refund, amount),
+                _claimPongSignature(nonce,target, refund, amount),
                 address(this)
             );
+            emit Claimed(srcChainId, sender, target, refund, amount);
         }
     }
 
@@ -275,12 +344,15 @@ contract MasterTokenBase is ERC314PlusCore {
         uint64 srcChainId,
         address sender,
         address target,
-        uint native
+        uint native,
+        uint nonce 
     ) internal virtual override {
+        require(nonce > sbNonce[srcChainId][sender], "nonce repetition");
+        sbNonce[srcChainId][sender] = nonce;
         require(launched, "unlaunched");
         require(dstContracts[srcChainId] != address(0), "need dest chain contract");
         require(msg.value == native + pongFee, "value err.");
-        uint expectPongFee = buyPongEstimateGas(srcChainId, target, native);
+        uint expectPongFee = buyPongEstimateGas(nonce,srcChainId, target, native);
 
         if (pongFee < expectPongFee) {
             _creditLocked(sender, native + pongFee, 0);
@@ -300,10 +372,12 @@ contract MasterTokenBase is ERC314PlusCore {
                 srcChainId,
                 dstContracts[srcChainId],
                 0,
-                _buyPongSignature(target, 0, amount),
+                _buyPongSignature(nonce,target, 0, amount),
                 address(this)
             );
-            if (pongFee > expectPongFee) payable(feeAddress).transfer(pongFee - expectPongFee);
+            if (pongFee > expectPongFee) 
+                // payable(feeAddress).transfer(pongFee - expectPongFee);
+                transferNative(feeAddress,pongFee - expectPongFee);
         }
     }
 
@@ -317,12 +391,16 @@ contract MasterTokenBase is ERC314PlusCore {
         uint64 srcChainId,
         address sender,
         address target,
-        uint token
+        uint token,
+        uint nonce
     ) internal virtual override {
+
+        require(nonce > ssNonce[srcChainId][sender], "nonce repetition");
+        ssNonce[srcChainId][sender] = nonce;
         require(launched, "unlaunched");
         require(dstContracts[srcChainId] != address(0), "need dest chain contract");
 
-        uint expectPongFee = sellPongEstimateGas(srcChainId, dstContracts[srcChainId], token);
+        uint expectPongFee = sellPongEstimateGas(nonce,srcChainId, dstContracts[srcChainId], token);
         if (pongFee < expectPongFee) {
             _mint(address(this), token);
             _creditLocked(sender, pongFee, token);
@@ -330,37 +408,27 @@ contract MasterTokenBase is ERC314PlusCore {
         } else {
             (uint amountOut, uint fee) = _getSellAmountOutAtSelfCall(token, pongFee);
             require(msg.value == pongFee + amountOut, "value err.");
+            if (amountOut > nativeMax) {
+                _creditLocked(sender, 0, token);
+                emit AssetLocked(ActionType.sellPing, srcChainId, sender, 0, token);
+                return;
+            }
             _mint(address(this), token);
-            payable(feeAddress).transfer(fee);
+            // payable(feeAddress).transfer(fee);
+            transferNative(feeAddress, fee);
             emit Swap(target, 0, token, amountOut, 0);
             paramsEmit2LaunchPad(
                 expectPongFee,
                 srcChainId,
                 dstContracts[srcChainId],
                 amountOut,
-                _sellPongSignature(target, 0, amountOut),
+                _sellPongSignature(nonce,target, 0, amountOut),
                 address(this)
             );
-            if (pongFee > expectPongFee) payable(feeAddress).transfer(pongFee - expectPongFee);
+            if (pongFee > expectPongFee) 
+            // payable(feeAddress).transfer(pongFee - expectPongFee);
+                transferNative(feeAddress,pongFee - expectPongFee);
         }
-    }
-
-    function deposit(uint pongFee, uint amount) public payable virtual override nonReentrant {
-        require(!launched, "launched");
-        require(pongFee == 0 && msg.value == amount, "value err.");
-        _creditDeposit(uint64(block.chainid), _msgSender(), amount);
-        deposited[_msgSender()] += amount;
-    }
-
-    function claim(uint pongFee) public payable virtual override nonReentrant {
-        require(launched, "unlaunched");
-        require(pongFee == 0 && msg.value == 0, "value err.");
-        address target = _msgSender();
-        (uint refund, uint amount) = _computeClaim(uint64(block.chainid), target);
-        _creditClaim(uint64(block.chainid), target, refund, amount);
-        _transfer(address(this), target, amount);
-        payable(target).transfer(refund);
-        claimed[target] = true;
     }
 
     function unlock(address to) external virtual nonReentrant {
@@ -368,49 +436,14 @@ contract MasterTokenBase is ERC314PlusCore {
         uint native = locked[owner].native;
         uint token = locked[owner].token;
         _debitLocked(owner, native, token);
-        payable(to).transfer(native);
+        // payable(to).transfer(native);
+        transferNative(to, native);
         _transfer(address(this), to, token);
-    }
-
-    function swapExactETHForTokens(
-        uint pongFee,
-        address to,
-        uint deadline
-    ) external payable virtual override nonReentrant {
-        require(launched, "unlaunched");
-        require(deadline == 0 || deadline > block.timestamp, "deadline err.");
-        require(pongFee == 0 && msg.value > 0, "value err.");
-        uint amountIn = msg.value;
-        require(amountIn > 0, "amount in err.");
-        (uint amount, uint fee) = _getAmountOutAtSend(amountIn, true);
-
-        _transfer(address(this), to, amount);
-        _transfer(address(this), feeAddress, fee);
-        emit Swap(_msgSender(), amountIn, 0, 0, amount);
-    }
-
-    function swapExactTokensForETH(
-        uint pongFee,
-        uint amountIn,
-        address to,
-        uint deadline
-    ) external payable virtual override nonReentrant {
-        require(launched, "unlaunched");
-        require(deadline == 0 || deadline > block.timestamp, "deadline err.");
-        require(pongFee == 0 && msg.value == 0, "value err.");
-        require(amountIn > 0, "amount in err.");
-        (uint amount, uint fee) = _getAmountOutAtSend(amountIn, false);
-
-        //_spendAllowance(_msgSender(), address(this), amountIn);
-        ERC20._transfer(_msgSender(), address(this), amountIn);
-
-        payable(to).transfer(amount);
-        payable(feeAddress).transfer(fee);
-        emit Swap(_msgSender(), 0, amountIn, amount, 0);
     }
 
     //----EstimateGas----
     function depositPongEstimateGas(
+        uint nonce,
         uint64 dstChainId,
         address target,
         uint amount
@@ -419,30 +452,32 @@ contract MasterTokenBase is ERC314PlusCore {
             dstChainId,
             dstContracts[dstChainId],
             0,
-            _depositPingPongSignature(target, 0, amount)
+            _depositPingPongSignature(nonce,target, 0, amount)
         );
     }
 
-    function claimPongEstimateGas(uint64 dstChainId, address target) public view virtual returns (uint pongFee) {
+    function claimPongEstimateGas(uint nonce,uint64 dstChainId, address target) public view virtual returns (uint pongFee) {
         (uint refund, uint amount) = _computeClaim(dstChainId, target);
         pongFee = paramsEstimateGas(
             dstChainId,
             dstContracts[dstChainId],
             refund,
-            _claimPongSignature(target, refund, amount)
+            _claimPongSignature(nonce,target, refund, amount)
         );
     }
 
     function buyPongEstimateGas(
+        uint nonce,
         uint64 dstChainId,
         address target,
         uint amountIn
     ) public view virtual returns (uint pongFee) {
         (uint amountOut, uint fee) = getAmountOut(amountIn, true);
-        pongFee = paramsEstimateGas(dstChainId, dstContracts[dstChainId], 0, _buyPongSignature(target, 0, amountOut));
+        pongFee = paramsEstimateGas(dstChainId, dstContracts[dstChainId], 0, _buyPongSignature(nonce,target, 0, amountOut));
     }
 
     function sellPongEstimateGas(
+        uint nonce,
         uint64 dstChainId,
         address target,
         uint amountIn
@@ -452,7 +487,41 @@ contract MasterTokenBase is ERC314PlusCore {
             dstChainId,
             dstContracts[dstChainId],
             amountOut,
-            _sellPongSignature(target, amountOut, 0)
+            _sellPongSignature(nonce,target, amountOut, 0)
         );
+    }
+
+    function master_cross(uint64 srcChainId, address sender, uint64 dstChainId, address to, uint token,uint nonce) internal virtual override {
+        require(nonce > crossNonce[srcChainId][sender], "nonce repetition");
+        crossNonce[srcChainId][sender] = nonce;
+        require(dstChainId == block.chainid, "chain id err");
+        if (token > 0) _mint(to, token);
+    }
+
+    function crossToEstimateGas(uint64 dstChainId, address to, uint amount) public view virtual returns (uint pingFee) {
+        uint nonce = crossNonce[dstChainId][to];
+        pingFee = paramsEstimateGas(
+            dstChainId,
+            dstContracts[dstChainId],
+            0,
+            _crossPingSignature(nonce+1,dstChainId, to, amount)
+        );
+    }
+
+    function crossTo(uint64 dstChainId, address to, uint amount) external payable virtual whenNotPaused{
+        require(dstContracts[dstChainId] != address(0), "not slave chain");
+        address owner = _msgSender();
+        require(balanceOf(owner) > amount, "insufficient balance");
+        _burn(owner, amount);
+        uint nonce = crossNonce[block.chainid][_msgSender()];
+        paramsEmit2LaunchPad(
+            0,
+            dstChainId,
+            dstContracts[dstChainId] ,
+            0,
+            _crossPingSignature(nonce+1,dstChainId, to, amount),
+            _msgSender()
+        );
+        crossNonce[block.chainid][_msgSender()]++;
     }
 }
