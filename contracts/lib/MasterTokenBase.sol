@@ -278,7 +278,7 @@ contract MasterTokenBase is ERC314PlusCore {
                 _depositPingPongSignature(nonce,target, uint(0), amount),
                 address(this)
             );
-            emit Deposited(srcChainId, sender, amount);
+            emit Deposited(srcChainId, sender, amount, nonce);
         }
     }
 
@@ -338,7 +338,7 @@ contract MasterTokenBase is ERC314PlusCore {
                 _claimPongSignature(nonce,target, refund, amount),
                 address(this)
             );
-            emit Claimed(srcChainId, sender, target, refund, amount);
+            emit Claimed(srcChainId, sender, target, refund, amount,nonce);
         }
     }
 
@@ -368,7 +368,7 @@ contract MasterTokenBase is ERC314PlusCore {
             */
             _burn(address(this), amount);
             _transfer(address(this), feeAddress, fee);
-            emit Swap(target, native, 0, 0, amount);
+            emit Swap(target, native, 0, 0, amount, nonce);
 
             paramsEmit2LaunchPad(
                 expectPongFee,
@@ -413,13 +413,13 @@ contract MasterTokenBase is ERC314PlusCore {
             require(msg.value == pongFee + amountOut, "value err.");
             if (amountOut > nativeMax) {
                 _creditLocked(sender, 0, token);
-                emit AssetLocked(ActionType.sellPing, srcChainId, sender, 0, token);
+                emit AssetLocked(ActionType.sellPing, srcChainId, sender, 0, token, nonce);
                 return;
             }
             _mint(address(this), token);
             // payable(feeAddress).transfer(fee);
             transferNative(feeAddress, fee);
-            emit Swap(target, 0, token, amountOut, 0);
+            emit Swap(target, 0, token, amountOut, 0,nonce);
             paramsEmit2LaunchPad(
                 expectPongFee,
                 srcChainId,
@@ -442,6 +442,7 @@ contract MasterTokenBase is ERC314PlusCore {
         // payable(to).transfer(native);
         transferNative(to, native);
         _transfer(address(this), to, token);
+        emit Unlocked(owner, to, native, token);
     }
 
     //----EstimateGas----
@@ -499,6 +500,7 @@ contract MasterTokenBase is ERC314PlusCore {
         crossNonce[srcChainId][sender] = nonce;
         require(dstChainId == block.chainid, "chain id err");
         if (token > 0) _mint(to, token);
+        emit Crossed(srcChainId, sender, to, token, nonce);
     }
 
     function crossToEstimateGas(uint64 dstChainId, address to, uint amount) public view virtual returns (uint pingFee) {

@@ -51,10 +51,12 @@ abstract contract ERC314PlusCore is ERC20, Ownable, ReentrancyGuard, VizingOmni,
         uint omniSupply,
         uint presaleAccumulate
     );
-    event Swap(address indexed sender, uint amount0In, uint amount1In, uint amount0Out, uint amount1Out);
-    event AssetLocked(ActionType _action, uint64 _srcChainId, address _owner, uint _lockedNative, uint _lockedToken);
-    event Deposited(uint64 _srcChainId, address _sender, uint _native);
-    event Claimed(uint64 _srcChainId, address _sender, address _to, uint _native, uint _token);
+    event Swap(address indexed sender, uint amount0In, uint amount1In, uint amount0Out, uint amount1Out,uint nonce);
+    event AssetLocked(ActionType _action, uint64 _srcChainId, address _owner, uint _lockedNative, uint _lockedToken,uint nonce);
+    event Deposited(uint64 _srcChainId, address _sender, uint _native,uint nonce);
+    event Claimed(uint64 _srcChainId, address _sender, address _to, uint _native, uint _token,uint nonce);
+    event Crossed(uint64 _srcChainId, address _sender, address _to, uint _token,uint nonce);
+    event Unlocked(address _owner,address _to, uint _native, uint _token);
 
     uint64 public immutable override minArrivalTime;
     uint64 public immutable override maxArrivalTime;

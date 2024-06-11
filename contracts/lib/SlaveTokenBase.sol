@@ -276,6 +276,7 @@ contract SlaveTokenBase is ERC314PlusCore {
         crossNonce[srcChainId][sender] = nonce;
         require(dstChainId == block.chainid, "chain id err");
         if (token > 0) _mint(to, token);
+        emit Crossed(srcChainId, sender, to, token, nonce);
     }
 
     function crossToEstimateGas(uint64 dstChainId, address to, uint amount) public view virtual returns (uint pingFee) {
