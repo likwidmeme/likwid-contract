@@ -8,13 +8,17 @@
     "test": "set TS_NODE_TRANSPILE_ONLY=1&&npx hardhat test",
     "test:gas": "cross-env REPORT_GAS=true npx hardhat test",
     "coverage": "npx hardhat coverage",
+    
     "deploy:vizing_testnet": "npx hardhat deploy --network vizing_testnet --tags dev",
     "deploy:arbitrum_sepolia": "npx hardhat deploy --network arbitrum_sepolia --tags dev",
     "deploy:polygon_zkevm_cardona": "npx hardhat deploy --network polygon_zkevm_cardona --tags dev",
+    
     "deploy:dev": "npm run deploy:vizing_testnet && npm run deploy:arbitrum_sepolia && npm run deploy:polygon_zkevm_cardona",
     "devAdapter": "npx hardhat devAdapter --network vizing_testnet && npx hardhat devAdapter --network arbitrum_sepolia && npx hardhat devAdapter --network polygon_zkevm_cardona",
+    
     "verify:master": "npx hardhat devMasterVerify --network vizing_testnet --show-stack-traces",
-    "verify:slave:arbitrum_sepolia": "npx hardhat  devSlaveVerify --network arbitrum_sepolia",
+    "verify:slave": "npx hardhat  devSlaveVerify --network arbitrum_sepolia && npx hardhat  devSlaveVerify --network polygon_zkevm_cardona",
+    
     "flatten:TokenMaster": "npx hardhat flatten contracts/TokenMaster.sol>flatten/TokenMaster.sol",
     "flatten:TokenSlave": "npx hardhat flatten contracts/TokenSlave.sol>flatten/TokenSlave.sol"
   },

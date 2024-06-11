@@ -81,6 +81,7 @@ const config: HardhatUserConfig = {
     enabled: true,
     apiKey: {
       arbitrum_sepolia: getScanApiKey('arbitrum_sepolia'),
+      polygon_zkevm_cardona: getScanApiKey('polygon_zkevm_cardona'),
       vizing_testnet: 'NULL',
     },
     customChains: [
@@ -98,6 +99,14 @@ const config: HardhatUserConfig = {
         urls: {
           apiURL: 'https://explorer-sepolia.vizing.com/api',
           browserURL: 'https://explorer-sepolia.vizing.com/',
+        },
+      },
+      {
+        network: 'polygon_zkevm_cardona',
+        chainId: 2442,
+        urls: {
+          apiURL: 'https://api-cardona-zkevm.polygonscan.com/api',
+          browserURL: 'https://cardona-zkevm.polygonscan.com/',
         },
       },
     ],

@@ -10,7 +10,7 @@ export default async (args: { name: string }, hre: HardhatRuntimeEnvironment) =>
   const contractAddress = getDeploymentAddresses(chain)['TokenSlave'];
   const result = await hre.run('verify:verify', {
     address: contractAddress,
-    constructorArguments: [protocols[chain!].vizingPad, 28518],
+    constructorArguments: [protocols[chain!].vizingPad, 28516],
     contract: 'contracts/TokenSlave.sol:TokenSlave',
   });
   console.log(result);
