@@ -82,6 +82,23 @@ contract MasterTokenBase is ERC314PlusCore {
     //         _feeAddr
     //     );
     // }
+    function launchPay(
+        uint _totalSupply,
+        uint _launchFunds,
+        uint _tokenomics,
+        address _airdropAddr
+    ) public view returns (uint amount) {
+        if(_tokenomics == 2){
+            uint poolLocked = 0.5 ether;
+            uint presale = 0.4 ether;
+            uint earmarked = 0.1 ether;
+            uint earmarkedAmount = earmarked / presale * _launchFunds;
+            return earmarkedAmount;
+        } else {
+            return 0;
+        }
+    }
+    
     function launch(
         uint _totalSupply,
         uint _launchFunds,
