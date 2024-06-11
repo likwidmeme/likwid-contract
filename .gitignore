@@ -8,6 +8,7 @@ coverage.json
 typechain
 typechain-types
 deployments
+task_copy
 .vscode
 package-lock.json
 
