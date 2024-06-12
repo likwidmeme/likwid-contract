@@ -70,12 +70,12 @@ abstract contract ERC314PlusCore is ERC20, Ownable, ReentrancyGuard, VizingOmni,
     uint64 public masterChainId;
     bool public launched;
     uint public messageReceived;
-    address public feeAddress = owner();
+    address public feeAddress;
     uint totalSupplyInit = 2000000 ether;
     uint launchFunds = 1 ether;
     uint launchHardCap = 10 ether;
     uint tokenomics = 2;
-    address airdropAddr = owner();
+    address public airdropAddr;
     function setFeeAddress(address addr) public virtual onlyOwner {
         feeAddress = addr;
     }
@@ -117,6 +117,8 @@ abstract contract ERC314PlusCore is ERC20, Ownable, ReentrancyGuard, VizingOmni,
         masterChainId = _masterChainId;
         launched = false;
         defaultBridgeMode = MessageTypeLib.STANDARD_ACTIVATE;
+        feeAddress = owner();
+        airdropAddr = owner();
     }
 
     //----vizing bridge common----
