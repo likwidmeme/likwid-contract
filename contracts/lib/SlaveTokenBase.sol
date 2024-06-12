@@ -270,8 +270,8 @@ contract SlaveTokenBase is ERC314PlusCore {
     }
 
     function slave_cross(uint64 srcChainId, address sender, uint64 dstChainId, address to, uint token,uint nonce) internal virtual override {
-        require(nonce > crossNonce[srcChainId][sender], "nonce repetition");
-        crossNonce[srcChainId][sender] = nonce;
+        require(!crossNonce[srcChainId][sender][nonce], "nonce repetition");
+        crossNonce[srcChainId][sender][nonce] = true;
         require(dstChainId == block.chainid, "chain id err");
         if (token > 0) _mint(to, token);
         emit Crossed(srcChainId, sender, to, token, nonce);
