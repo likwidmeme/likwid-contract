@@ -71,10 +71,10 @@ abstract contract ERC314PlusCore is ERC20, Ownable, ReentrancyGuard, VizingOmni,
     bool public launched;
     uint public messageReceived;
     address public feeAddress;
-    uint totalSupplyInit = 2000000 ether;
-    uint launchFunds = 1 ether;
-    uint launchHardCap = 10 ether;
-    uint tokenomics = 2;
+    uint public totalSupplyInit = 2000000 ether;
+    uint public launchFunds = 1 ether;
+    uint public launchHardCap = 10 ether;
+    uint public tokenomics = 2;
     address public airdropAddr;
     function setFeeAddress(address addr) public virtual onlyOwner {
         feeAddress = addr;
