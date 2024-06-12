@@ -21,6 +21,7 @@ contract SlaveTokenBase is ERC314PlusCore {
         selectedRelayer = _defaultRelayer;
     }
     mapping(address => uint) public deposited; //local chain deposited address=>amount
+    mapping(address => uint) public depositPing;
     mapping(address => bool) public claimed;
     mapping(address => uint) public depositNonce;
     mapping(address => mapping(uint => bool)) public depositNoncePong;
@@ -120,7 +121,8 @@ contract SlaveTokenBase is ERC314PlusCore {
         require(!launched, "launched");
         uint pingFee = depositPingEstimateGas(pongFee, _msgSender(), amount);
         require(msg.value >= amount + pingFee + pongFee, "bridge fee not enough");
-        require(deposited[_msgSender()] + amount <= nativeMax,"exceeding the maximum value");
+        require(depositPing[_msgSender()] + amount <= nativeMax,"exceeding the maximum value");
+        depositPing[_msgSender()] += amount;
         uint nonce = depositNonce[_msgSender()];
         paramsEmit2LaunchPad(
             pingFee,

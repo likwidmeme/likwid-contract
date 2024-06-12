@@ -56,78 +56,41 @@ contract MasterTokenBase is ERC314PlusCore {
         return dstContracts[srcChainId] == srcContract;
     }
 
-    // function launch(
-    //     uint _totalSupply,
-    //     uint _presaleSupply,
-    //     uint _refundRatio,
-    //     address _feeAddr
-    // ) public virtual onlyOwner nonReentrant {
-    //     require(_totalSupply > presaleSupply && _refundRatio <= 1 ether);
-    //     require(!launched, "launched");
-    //     require(address(this).balance >= presaleAccumulate && presaleAccumulate > 0, "pool insufficient quantity");
-    //     presaleRefundRatio = _refundRatio;
-    //     presaleSupply = _presaleSupply;
-    //     omniSupply = _totalSupply;
-    //     feeAddress = _feeAddr;
-    //     launched = true;
-    //     _mint(address(this), _totalSupply);
-    //     presaleNative = (presaleAccumulate * (1 ether - presaleRefundRatio)) / 1 ether;
-    //     claimDebitAmount = DebitAmount(presaleAccumulate - presaleNative, presaleSupply);
-    //     emit Launch(
-    //         _msgSender(),
-    //         presaleNative,
-    //         omniSupply,
-    //         presaleSupply,
-    //         presaleAccumulate - presaleNative,
-    //         _feeAddr
-    //     );
-    // }
-    function launchPay(
-        uint _totalSupply,
-        uint _launchFunds,
-        uint _tokenomics,
-        address _airdropAddr
-    ) public view returns (uint amount) {
-        if(_tokenomics == 2){
+    function launchPay() public view returns (uint amount) {
+        if(tokenomics == 2){
             uint poolLocked = 0.5 ether;
             uint presale = 0.4 ether;
             uint earmarked = 0.1 ether;
-            uint earmarkedAmount = earmarked / presale * _launchFunds;
+            uint earmarkedAmount = earmarked / presale * launchFunds;
             return earmarkedAmount;
         } else {
             return 0;
         }
     }
     
-    function launch(
-        uint _totalSupply,
-        uint _launchFunds,
-        uint _tokenomics,
-        address _airdropAddr
-    ) public payable virtual onlyOwner nonReentrant {
-        // require(_totalSupply > presaleSupply && _refundRatio <= 1 ether);
+    function launch() public payable virtual onlyOwner nonReentrant {
         require(!launched, "launched");
         require(address(this).balance >= presaleAccumulate && presaleAccumulate > 0, "pool insufficient quantity");
-        require(presaleAccumulate > _launchFunds, "pool insufficient quantity");
+        require(presaleAccumulate > launchFunds, "pool insufficient quantity");
         //50% pool locked in trading curve, 40% presale, 10% Earmarked presale for airdrop
-        if(_tokenomics == 2){
+        if(tokenomics == 2){
             uint poolLocked = 0.5 ether;
             uint presale = 0.4 ether;
             uint earmarked = 0.1 ether;
-            uint earmarkedAmount = earmarked / presale * _launchFunds;
+            uint earmarkedAmount = earmarked / presale * launchFunds;
             uint amountIn = msg.value;
             if(amountIn >= earmarkedAmount){
                 // payable(feeAddress).transfer(amountIn - earmarkedAmount);                
                 transferNative(feeAddress, amountIn - earmarkedAmount);
-                earmarkedSupply = _totalSupply * earmarked;
+                earmarkedSupply = totalSupplyInit * earmarked;
                 earmarkedNative = earmarkedAmount;
-                presaleRefundRatio = (presaleAccumulate-_launchFunds)/presaleAccumulate;
-                presaleSupply = _totalSupply * presale;
-                omniSupply = _totalSupply;
+                presaleRefundRatio = (presaleAccumulate-launchFunds)/presaleAccumulate;
+                presaleSupply = totalSupplyInit * presale;
+                omniSupply = totalSupplyInit;
                 // feeAddress = _feeAddr;
                 launched = true;
-                _mint(address(this), _totalSupply);
-                _transfer(address(this), _airdropAddr, earmarkedSupply);
+                _mint(address(this), totalSupplyInit);
+                _transfer(address(this), airdropAddr, earmarkedSupply);
 
                 presaleNative = (presaleAccumulate * (1 ether - presaleRefundRatio)) / 1 ether;
                 claimDebitAmount = DebitAmount(presaleAccumulate - presaleNative, presaleSupply);
