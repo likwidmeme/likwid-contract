@@ -122,7 +122,6 @@ contract SlaveTokenBase is ERC314PlusCore {
         require(msg.value >= amount + pingFee + pongFee, "bridge fee not enough");
         require(deposited[_msgSender()] + amount <= nativeMax,"exceeding the maximum value");
         uint nonce = depositNonce[_msgSender()];
-        require(nonce == 0 || depositNoncePong[_msgSender()][nonce], "last execution has not ended");
         paramsEmit2LaunchPad(
             pingFee,
             masterChainId,
@@ -147,7 +146,6 @@ contract SlaveTokenBase is ERC314PlusCore {
         uint pingFee = claimPingEstimateGas(pongFee, _msgSender());
         require(msg.value >= pingFee + pongFee, "bridge fee not enough");
         uint nonce = claimNonce[_msgSender()];
-        require(nonce == 0 || claimNoncePong[_msgSender()][nonce], "last execution has not ended");
         paramsEmit2LaunchPad(
             pingFee,
             masterChainId,
@@ -183,7 +181,6 @@ contract SlaveTokenBase is ERC314PlusCore {
         require(amountIn > nativeMin, "amount in err.");
         require(amountIn < nativeMax,"exceeding the maximum value");
         uint nonce = buyNonce[_msgSender()];
-        require(nonce == 0 || buyNoncePong[_msgSender()][nonce], "last execution has not ended");
         paramsEmit2LaunchPad(
             pingFee,
             masterChainId,
@@ -223,7 +220,6 @@ contract SlaveTokenBase is ERC314PlusCore {
         require(amountIn > tokenMin, "amount in err.");
 
         uint nonce = sellNonce[_msgSender()];
-        require(nonce == 0 || sellNoncePong[_msgSender()][nonce], "last execution has not ended");
 
         _burn(from, amountIn);
         paramsEmit2LaunchPad(

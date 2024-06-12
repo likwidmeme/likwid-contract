@@ -9,10 +9,10 @@ contract MasterTokenBase is ERC314PlusCore {
     mapping(uint64 => mapping(address => uint)) public slaveDeposited; //slave chain deposited chainId=>address=>amount
     mapping(uint64 => mapping(address => uint)) public slaveClaimed;
 
-    mapping(uint64 => mapping(address => uint)) public sdNonce;
-    mapping(uint64 => mapping(address => uint)) public scNonce;
-    mapping(uint64 => mapping(address => uint)) public sbNonce;
-    mapping(uint64 => mapping(address => uint)) public ssNonce;
+    mapping(uint64 => mapping(address => mapping(uint => bool))) public sdNonce;
+    mapping(uint64 => mapping(address => mapping(uint => bool))) public scNonce;
+    mapping(uint64 => mapping(address => mapping(uint => bool))) public sbNonce;
+    mapping(uint64 => mapping(address => mapping(uint => bool))) public ssNonce;
 
     DebitAmount public claimDebitAmount;
     mapping(address => DebitAmount) public locked;
@@ -256,8 +256,8 @@ contract MasterTokenBase is ERC314PlusCore {
         uint amount,
         uint nonce
     ) internal virtual override {
-        require(nonce > sdNonce[srcChainId][sender], "nonce repetition");
-        sdNonce[srcChainId][sender] = nonce;
+        require(!sdNonce[srcChainId][sender][nonce], "nonce repetition");
+        sdNonce[srcChainId][sender][nonce] = true;
         require(!launched, "launched");
         require(dstContracts[srcChainId] != address(0), "need dest chain contract");
         require(msg.value == amount + pongFee, "value err.");
@@ -314,8 +314,8 @@ contract MasterTokenBase is ERC314PlusCore {
     }
 
     function master_claim(uint pongFee, uint64 srcChainId, address sender, address target,uint nonce) internal virtual override {
-        require(nonce > scNonce[srcChainId][sender], "nonce repetition");
-        scNonce[srcChainId][sender] = nonce;
+        require(!scNonce[srcChainId][sender][nonce], "nonce repetition");
+        scNonce[srcChainId][sender][nonce] = true;
         require(launched, "unlaunched");
         require(dstContracts[srcChainId] != address(0), "need dest chain contract");
         require(slaveClaimed[srcChainId][target] == 0, "claimed");
@@ -350,8 +350,8 @@ contract MasterTokenBase is ERC314PlusCore {
         uint native,
         uint nonce 
     ) internal virtual override {
-        require(nonce > sbNonce[srcChainId][sender], "nonce repetition");
-        sbNonce[srcChainId][sender] = nonce;
+        require(!sbNonce[srcChainId][sender][nonce], "nonce repetition");
+        sbNonce[srcChainId][sender][nonce] = true;
         require(launched, "unlaunched");
         require(dstContracts[srcChainId] != address(0), "need dest chain contract");
         require(msg.value == native + pongFee, "value err.");
@@ -397,9 +397,8 @@ contract MasterTokenBase is ERC314PlusCore {
         uint token,
         uint nonce
     ) internal virtual override {
-
-        require(nonce > ssNonce[srcChainId][sender], "nonce repetition");
-        ssNonce[srcChainId][sender] = nonce;
+        require(!ssNonce[srcChainId][sender][nonce], "nonce repetition");
+        ssNonce[srcChainId][sender][nonce] = true;
         require(launched, "unlaunched");
         require(dstContracts[srcChainId] != address(0), "need dest chain contract");
 
