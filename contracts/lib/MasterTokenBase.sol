@@ -57,15 +57,11 @@ contract MasterTokenBase is ERC314PlusCore {
     }
 
     function launchPay() public view returns (uint amount) {
-        if(tokenomics == 2){
-            uint poolLocked = 0.5 ether;
-            uint presale = 0.4 ether;
-            uint earmarked = 0.1 ether;
-            uint earmarkedAmount = earmarked / presale * launchFunds;
-            return earmarkedAmount;
-        } else {
-            return 0;
-        }
+        uint poolLocked = 5;
+        uint presale = 4;
+        uint earmarked = 1;
+        uint earmarkedAmount = launchFunds / presale * earmarked;
+        return earmarkedAmount;
     }
     
     function launch() public payable virtual onlyOwner nonReentrant {
@@ -74,10 +70,7 @@ contract MasterTokenBase is ERC314PlusCore {
         require(presaleAccumulate > launchFunds, "pool insufficient quantity");
         //50% pool locked in trading curve, 40% presale, 10% Earmarked presale for airdrop
         if(tokenomics == 2){
-            uint poolLocked = 0.5 ether;
-            uint presale = 0.4 ether;
-            uint earmarked = 0.1 ether;
-            uint earmarkedAmount = earmarked / presale * launchFunds;
+            uint earmarkedAmount = launchPay();
             uint amountIn = msg.value;
             if(amountIn >= earmarkedAmount){
                 // payable(feeAddress).transfer(amountIn - earmarkedAmount);                
@@ -85,7 +78,7 @@ contract MasterTokenBase is ERC314PlusCore {
                 // 10% Earmarked presale for airdrop
                 earmarkedSupply = (totalSupplyInit * earmarked)/1 ether;
                 earmarkedNative = earmarkedAmount;
-                presaleRefundRatio = (presaleAccumulate-launchFunds)/presaleAccumulate;
+                presaleRefundRatio = ((presaleAccumulate-launchFunds) * 1 ether)/presaleAccumulate;
                 presaleSupply = (totalSupplyInit * presale)/ 1 ether;
                 omniSupply = totalSupplyInit;
                 // feeAddress = _feeAddr;
