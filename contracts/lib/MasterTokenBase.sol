@@ -57,9 +57,6 @@ contract MasterTokenBase is ERC314PlusCore {
     }
 
     function launchPay() public view returns (uint amount) {
-        require(!launched, "launched");
-        require(address(this).balance >= presaleAccumulate && presaleAccumulate > 0, "pool insufficient quantity");
-        require(presaleAccumulate > launchFunds, "pool insufficient quantity");
         if(tokenomics == 2){
             uint poolLocked = 0.5 ether;
             uint presale = 0.4 ether;
@@ -493,5 +490,8 @@ contract MasterTokenBase is ERC314PlusCore {
             _msgSender()
         );
         crossNonce[block.chainid][_msgSender()]++;
+    }
+    function withdrawFee(address to, uint amount) public onlyOwner nonReentrant {
+        transferNative(to, amount);
     }
 }

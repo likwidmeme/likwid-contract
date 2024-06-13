@@ -11,10 +11,15 @@ export default async (args: { validator: string }, hre: HardhatRuntimeEnvironmen
     console.log(`master(${instance.address})`);
 
     if (!(await instance.launched())) {
-      const launchAmount = await instance.launchPay();
+      // const launchAmount = await instance.launchPay();
+      const launchAmount = ethers.utils.parseEther('0.25');
+      console.log(`deployer.address:${deployer.address}`);
+      console.log(`deployer.address getBalance:${await ethers.provider.getBalance(deployer.address)}`);
+
       console.log(`launch amount:${launchAmount}`);
       const tx = await instance.launch({
         value: launchAmount,
+        gasLimit: 5000000,
       });
       console.log(`pending tx ${tx.hash}`);
       await tx.wait();
