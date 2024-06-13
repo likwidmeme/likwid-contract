@@ -82,10 +82,11 @@ contract MasterTokenBase is ERC314PlusCore {
             if(amountIn >= earmarkedAmount){
                 // payable(feeAddress).transfer(amountIn - earmarkedAmount);                
                 transferNative(feeAddress, amountIn - earmarkedAmount);
-                earmarkedSupply = totalSupplyInit * earmarked;
+                // 10% Earmarked presale for airdrop
+                earmarkedSupply = (totalSupplyInit * earmarked)/1 ether;
                 earmarkedNative = earmarkedAmount;
                 presaleRefundRatio = (presaleAccumulate-launchFunds)/presaleAccumulate;
-                presaleSupply = totalSupplyInit * presale;
+                presaleSupply = (totalSupplyInit * presale)/ 1 ether;
                 omniSupply = totalSupplyInit;
                 // feeAddress = _feeAddr;
                 launched = true;
