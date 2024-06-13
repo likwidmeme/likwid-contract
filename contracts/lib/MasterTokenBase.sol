@@ -244,9 +244,10 @@ contract MasterTokenBase is ERC314PlusCore {
 
     function _computeClaim(uint64 srcChainId, address target) internal view virtual returns (uint refund, uint amount) {
         refund = presaleRefundRatio == 0 ? 0 : (slaveDeposited[srcChainId][target] * presaleRefundRatio) / 1 ether;
-        uint offset = refund % 2 == 1 ? 1 : 0;
+        uint offset = 1;
         uint fund = slaveDeposited[srcChainId][target] - refund - offset;
         amount = presaleNative == 0 ? 0 : (presaleSupply * fund) / presaleNative;
+        refund = refund - offset;
     }
 
     function presaleOf(
@@ -318,7 +319,7 @@ contract MasterTokenBase is ERC314PlusCore {
         uint expectPongFee = buyPongEstimateGas(nonce,srcChainId, target, native);
 
         if (pongFee < expectPongFee) {
-            _creditLocked(sender, native + pongFee, 0);
+            _creditLocked(sender, native, 0);
             emit PongfeeFailed(srcChainId, sender, uint8(ActionType.buyPing), pongFee, expectPongFee);
         } else {
             (uint amount, uint fee) = _getAmountOutAtSend(native, true);
@@ -365,12 +366,13 @@ contract MasterTokenBase is ERC314PlusCore {
         uint expectPongFee = sellPongEstimateGas(nonce,srcChainId, dstContracts[srcChainId], token);
         if (pongFee < expectPongFee) {
             _mint(address(this), token);
-            _creditLocked(sender, pongFee, token);
+            _creditLocked(sender, 0, token);
             emit PongfeeFailed(srcChainId, sender, uint8(ActionType.sellPing), pongFee, expectPongFee);
         } else {
             (uint amountOut, uint fee) = _getSellAmountOutAtSelfCall(token, pongFee);
             require(msg.value == pongFee + amountOut, "value err.");
             if (amountOut > nativeMax) {
+                _mint(address(this), token);
                 _creditLocked(sender, 0, token);
                 emit AssetLocked(ActionType.sellPing, srcChainId, sender, 0, token, nonce);
                 return;
@@ -475,7 +477,7 @@ contract MasterTokenBase is ERC314PlusCore {
     function crossTo(uint64 dstChainId, address to, uint amount) external payable virtual whenNotPaused{
         require(dstContracts[dstChainId] != address(0), "not slave chain");
         address owner = _msgSender();
-        require(balanceOf(owner) > amount, "insufficient balance");
+        require(balanceOf(owner) >= amount, "insufficient balance");
         _burn(owner, amount);
         uint nonce = crossNonce[block.chainid][_msgSender()];
         uint pingFee = crossToEstimateGas(dstChainId, to, amount);

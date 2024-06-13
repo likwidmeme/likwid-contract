@@ -286,7 +286,7 @@ contract SlaveTokenBase is ERC314PlusCore {
     function crossTo(uint64 dstChainId, address to, uint amount) external payable virtual whenNotPaused{
         require(dstChainId == masterChainId, "not master chain");
         address owner = _msgSender();
-        require(balanceOf(owner) > amount, "insufficient balance");
+        require(balanceOf(owner) >= amount, "insufficient balance");
         _burn(owner, amount);
         uint nonce = crossNonce[block.chainid][_msgSender()];
         uint pingFee = crossToEstimateGas(dstChainId, to, amount);
