@@ -57,9 +57,9 @@ contract MasterTokenBase is ERC314PlusCore {
     }
 
     function launchPay() public view returns (uint amount) {
-        uint poolLocked = 5;
-        uint presale = 4;
-        uint earmarked = 1;
+        uint poolLocked = 0.5 ether;
+        uint presale = 0.4 ether;
+        uint earmarked = 0.1 ether;
         uint earmarkedAmount = launchFunds / presale * earmarked;
         return earmarkedAmount;
     }
@@ -76,6 +76,9 @@ contract MasterTokenBase is ERC314PlusCore {
                 // payable(feeAddress).transfer(amountIn - earmarkedAmount);                
                 transferNative(feeAddress, amountIn - earmarkedAmount);
                 // 10% Earmarked presale for airdrop
+                uint poolLocked = 0.5 ether;
+                uint presale = 0.4 ether;
+                uint earmarked = 0.1 ether;
                 earmarkedSupply = (totalSupplyInit * earmarked)/1 ether;
                 earmarkedNative = earmarkedAmount;
                 presaleRefundRatio = ((presaleAccumulate-launchFunds) * 1 ether)/presaleAccumulate;
