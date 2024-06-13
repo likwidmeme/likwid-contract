@@ -60,7 +60,7 @@ contract MasterTokenBase is ERC314PlusCore {
         uint poolLocked = 0.5 ether;
         uint presale = 0.4 ether;
         uint earmarked = 0.1 ether;
-        uint earmarkedAmount = launchFunds / presale * earmarked;
+        uint earmarkedAmount = ((launchFunds * 1 ether) / presale * earmarked) /1 ether;
         return earmarkedAmount;
     }
     
