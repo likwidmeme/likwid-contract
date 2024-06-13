@@ -57,6 +57,9 @@ contract MasterTokenBase is ERC314PlusCore {
     }
 
     function launchPay() public view returns (uint amount) {
+        require(!launched, "launched");
+        require(address(this).balance >= presaleAccumulate && presaleAccumulate > 0, "pool insufficient quantity");
+        require(presaleAccumulate > launchFunds, "pool insufficient quantity");
         if(tokenomics == 2){
             uint poolLocked = 0.5 ether;
             uint presale = 0.4 ether;
@@ -458,8 +461,8 @@ contract MasterTokenBase is ERC314PlusCore {
     }
 
     function master_cross(uint64 srcChainId, address sender, uint64 dstChainId, address to, uint token,uint nonce) internal virtual override {
-        require(!crossNonce[srcChainId][sender][nonce], "nonce repetition");
-        crossNonce[srcChainId][sender][nonce] = true;
+        require(!crossNoncePing[srcChainId][sender][nonce], "nonce repetition");
+        crossNoncePing[srcChainId][sender][nonce] = true;
         require(dstChainId == block.chainid, "chain id err");
         if (token > 0) _mint(to, token);
         emit Crossed(srcChainId, sender, to, token, nonce);

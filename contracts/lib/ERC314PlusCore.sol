@@ -65,7 +65,9 @@ abstract contract ERC314PlusCore is ERC20, Ownable, ReentrancyGuard, VizingOmni,
     bytes1 public immutable override defaultBridgeMode;
     address public immutable override selectedRelayer;
 
-    mapping(uint => mapping(address => mapping(uint => bool))) public crossNonce;
+    mapping(uint => mapping(address => mapping(uint => bool))) public crossNoncePing;
+    mapping(uint => mapping(address => uint)) public crossNonce;
+
 
     uint64 public masterChainId;
     bool public launched;
