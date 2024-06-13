@@ -491,7 +491,4 @@ contract MasterTokenBase is ERC314PlusCore {
         );
         crossNonce[block.chainid][_msgSender()]++;
     }
-    function withdrawFee(address to, uint amount) public onlyOwner nonReentrant {
-        transferNative(to, amount);
-    }
 }
