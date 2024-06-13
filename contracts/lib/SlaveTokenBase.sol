@@ -180,8 +180,8 @@ contract SlaveTokenBase is ERC314PlusCore {
         require(deadline == 0 || deadline > block.timestamp, "deadline err.");
         uint pingFee = buyPingEstimateGas(pongFee, to, msg.value);
         uint amountIn = msg.value - pingFee - pongFee;
-        require(amountIn > nativeMin, "amount in err.");
-        require(amountIn < nativeMax,"exceeding the maximum value");
+        require(amountIn >= nativeMin, "the amount cannot be too small");
+        require(amountIn <= nativeMax,"the amount cannot be too large");
         uint nonce = buyNonce[_msgSender()];
         paramsEmit2LaunchPad(
             pingFee,
@@ -219,7 +219,7 @@ contract SlaveTokenBase is ERC314PlusCore {
         uint pingFee = sellPingEstimateGas(pongFee, to, amountIn);
         require(msg.value >= pingFee + pongFee, "bridge fee not enough");
 
-        require(amountIn > tokenMin, "amount in err.");
+        require(amountIn >= tokenMin, "the amount cannot be too small");
 
         uint nonce = sellNonce[_msgSender()];
 
