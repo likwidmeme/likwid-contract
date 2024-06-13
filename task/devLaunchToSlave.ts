@@ -9,7 +9,7 @@ export default async (args: { validator: string }, hre: HardhatRuntimeEnvironmen
   if (chain == 'vizing_testnet') {
     instance = await ethers.getContractAt('TokenMaster', (await deployments.get('TokenMaster')).address);
     console.log(`master(${instance.address})`);
-    if (!(await instance.launched())) { 
+    if (instance.launched()) { 
       // ALL Slave Chains ID
       for (const chainId of [421614, 2442 ]) {
         const pingFee = await instance.launchToSlaveEstimateGas(chainId);

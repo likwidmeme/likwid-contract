@@ -478,8 +478,9 @@ contract MasterTokenBase is ERC314PlusCore {
         require(balanceOf(owner) > amount, "insufficient balance");
         _burn(owner, amount);
         uint nonce = crossNonce[block.chainid][_msgSender()];
+        uint pingFee = crossToEstimateGas(dstChainId, to, amount);
         paramsEmit2LaunchPad(
-            0,
+            pingFee,
             dstChainId,
             dstContracts[dstChainId] ,
             0,
