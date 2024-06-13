@@ -265,10 +265,10 @@ contract MasterTokenBase is ERC314PlusCore {
         bytes memory params
     ) internal view virtual override returns (uint value, uint sendToFee) {
         if (action == uint8(ActionType.claimPing)) {
-            address target = abi.decode(params, (address));
+            (uint nonce ,address target) = abi.decode(params, (uint,address));
             (value, ) = _computeClaim(srcChainId, target);
         } else if (action == uint8(ActionType.sellPing)) {
-            (, uint token) = abi.decode(params, (address, uint));
+            (uint nonce,address target, uint token) = abi.decode(params, (uint,address, uint));
             (value, ) = _getAmountOutAtSend(token, false);
         } else return super._computePongValueWithOutPongFee(action, srcChainId, pongFee, params);
     }
@@ -287,7 +287,7 @@ contract MasterTokenBase is ERC314PlusCore {
             // payable(feeAddress).transfer(pongFee - expectPongFee);
                 transferNative(feeAddress,pongFee - expectPongFee);
             (uint refund, uint amount) = _computeClaim(srcChainId, target);
-            require(msg.value == pongFee + refund, "value err.");
+            require(msg.value >= expectPongFee + refund, "value err.");
             _burn(address(this), amount);
             _creditClaim(srcChainId, target, refund, amount);
             paramsEmit2LaunchPad(
