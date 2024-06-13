@@ -40,6 +40,7 @@ export default async (args: { validator: string }, hre: HardhatRuntimeEnvironmen
       omniSupply(${await instance.omniSupply()}),
       presaleAccumulate(${await instance.presaleAccumulate()})
       `);
+      console.log(`claimDebitAmount(${await instance.claimDebitAmount()})`);
       console.log(`pool.balanceOf:${await instance!.balanceOf(instance!.address)}`);
       console.log(`pool.ether:${await ethers.provider.getBalance(instance!.address)}`);
     }
