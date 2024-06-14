@@ -41,6 +41,7 @@ export default async (args: { validator: string }, hre: HardhatRuntimeEnvironmen
       presaleAccumulate(${await instance.presaleAccumulate()})
       `);
       console.log(`claimDebitAmount(${await instance.claimDebitAmount()})`);
+      console.log(`getReserves(${await instance.getReserves()})`);
       console.log(`pool.balanceOf:${await instance!.balanceOf(instance!.address)}`);
       console.log(`pool.ether:${await ethers.provider.getBalance(instance!.address)}`);
     }
