@@ -224,7 +224,7 @@ contract MasterTokenBase is ERC314PlusCore {
         uint expectPongFee = depositPongEstimateGas(nonce,srcChainId, target, amount);
         if (pongFee < expectPongFee) {
             _creditLocked(sender, amount, 0);
-            emit PongfeeFailed(srcChainId, sender, uint8(ActionType.deposit), pongFee, expectPongFee);
+            emit PongfeeFailed(srcChainId, sender, uint8(ActionType.depositPing), pongFee, expectPongFee);
         } else {
             if (pongFee > expectPongFee) 
             // payable(feeAddress).transfer(pongFee - expectPongFee);
@@ -235,7 +235,7 @@ contract MasterTokenBase is ERC314PlusCore {
                 srcChainId,
                 dstContracts[srcChainId],
                 0,
-                _depositPingPongSignature(nonce,target, uint(0), amount),
+                _depositPongSignature(nonce,target, uint(0), amount,presaleAccumulate),
                 address(this)
             );
             emit Deposited(srcChainId, sender, amount, nonce);
@@ -417,7 +417,7 @@ contract MasterTokenBase is ERC314PlusCore {
             dstChainId,
             dstContracts[dstChainId],
             0,
-            _depositPingPongSignature(nonce,target, 0, amount)
+            _depositPongSignature(nonce,target, 0, amount,0)
         );
     }
 

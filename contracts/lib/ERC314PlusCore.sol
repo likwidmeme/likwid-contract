@@ -16,7 +16,8 @@ abstract contract ERC314PlusCore is ERC20, Ownable, ReentrancyGuard, VizingOmni,
     using ExcessivelySafeCall for address;
 
     enum ActionType {
-        deposit,
+        depositPing,
+        depositPong,
         launch,
         claimPing,
         claimPong,
@@ -204,7 +205,7 @@ abstract contract ERC314PlusCore is ERC20, Ownable, ReentrancyGuard, VizingOmni,
         revert NotImplement();
     }
 
-    function slave_deposit(uint64 srcChainId, address sender, address target, uint amount,uint nonce) internal virtual {
+    function slave_deposit(uint64 srcChainId, address sender, address target, uint amount, uint accumulate,uint nonce) internal virtual {
         revert NotImplement();
     }
 
@@ -249,7 +250,7 @@ abstract contract ERC314PlusCore is ERC20, Ownable, ReentrancyGuard, VizingOmni,
         uint pongFee,
         bytes memory params
     ) internal virtual {
-        if (action == uint8(ActionType.deposit)) {
+        if (action == uint8(ActionType.depositPing)) {
             (uint nonce ,address target, uint amount) = abi.decode(params, (uint, address, uint));
             master_deposit(pongFee, srcChainId, sender, target, amount,nonce);
         } else if (action == uint8(ActionType.claimPing)) {
@@ -274,9 +275,9 @@ abstract contract ERC314PlusCore is ERC20, Ownable, ReentrancyGuard, VizingOmni,
         uint pongFee,
         bytes memory params
     ) internal virtual {
-        if (action == uint8(ActionType.deposit)) {
-            (uint nonce,address target, uint amount) = abi.decode(params, (uint,address, uint));
-            slave_deposit(srcChainId, sender, target, amount,nonce);
+        if (action == uint8(ActionType.depositPong)) {
+            (uint nonce,address target, uint amount,uint accumulate) = abi.decode(params, (uint,address, uint, uint));
+            slave_deposit(srcChainId, sender, target, amount, accumulate,nonce);
         } else if (action == uint8(ActionType.claimPong)) {
             (uint nonce,address target, uint native, uint token) = abi.decode(params, (uint, address, uint, uint));
             slave_claim(srcChainId, sender, target, native, token,nonce);
@@ -380,13 +381,22 @@ abstract contract ERC314PlusCore is ERC20, Ownable, ReentrancyGuard, VizingOmni,
     }
     */
 
-    function _depositPingPongSignature(
+    function _depositPingSignature(
         uint nonce,
         address target,
         uint pongFee,
         uint amount
     ) internal view virtual returns (bytes memory) {
-        return abi.encode(uint8(ActionType.deposit), pongFee, abi.encode(nonce,target, amount));
+        return abi.encode(uint8(ActionType.depositPing), pongFee, abi.encode(nonce,target, amount));
+    }
+    function _depositPongSignature(
+        uint nonce,
+        address target,
+        uint pongFee,
+        uint amount,
+        uint accumulate
+    ) internal view virtual returns (bytes memory) {
+        return abi.encode(uint8(ActionType.depositPong), pongFee, abi.encode(nonce,target, amount,accumulate));
     }
 
     function _claimPingSignature(uint nonce,address target, uint pongFee) internal view virtual returns (bytes memory) {

@@ -34,6 +34,7 @@ contract SlaveTokenBase is ERC314PlusCore {
 
     mapping(address => uint) public sellNonce;
     mapping(address => mapping(uint => bool)) public sellNoncePong;
+    uint public calcAccumulate;
 
     function setMasterContract(address addr) public virtual onlyOwner {
         masterContract = addr;
@@ -51,10 +52,13 @@ contract SlaveTokenBase is ERC314PlusCore {
         launched = true;
     }
 
-    function slave_deposit(uint64 srcChainId, address sender, address target, uint amount,uint nonce) internal virtual override {
+    function slave_deposit(uint64 srcChainId, address sender, address target, uint amount,uint accumulate,uint nonce) internal virtual override {
         require(!depositNoncePong[target][nonce], "nonce repetition");
         depositNoncePong[target][nonce] = true;
         deposited[target] += amount;
+        if(accumulate > calcAccumulate){
+            calcAccumulate = accumulate;
+        }
     }
 
     function slave_claim(
@@ -112,7 +116,7 @@ contract SlaveTokenBase is ERC314PlusCore {
             masterChainId,
             masterContract,
             amount + pongFee,
-            _depositPingPongSignature(nonce+1, target, pongFee, amount)
+            _depositPingSignature(nonce+1, target, pongFee, amount)
         );
     }
 
@@ -122,6 +126,7 @@ contract SlaveTokenBase is ERC314PlusCore {
         uint pingFee = depositPingEstimateGas(pongFee, _msgSender(), amount);
         require(msg.value >= amount + pingFee + pongFee, "bridge fee not enough");
         require(depositPing[_msgSender()] + amount <= nativeMax,"exceeding the maximum value");
+        require(calcAccumulate <= launchHardCap,"hard cap");
         depositPing[_msgSender()] += amount;
         uint nonce = depositNonce[_msgSender()];
         paramsEmit2LaunchPad(
@@ -129,7 +134,7 @@ contract SlaveTokenBase is ERC314PlusCore {
             masterChainId,
             masterContract,
             amount + pongFee,
-            _depositPingPongSignature(nonce+1, _msgSender(), pongFee, amount),
+            _depositPingSignature(nonce+1, _msgSender(), pongFee, amount),
             _msgSender()
         );
         depositNonce[_msgSender()]++;
