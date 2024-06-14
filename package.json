@@ -19,6 +19,8 @@
     "verify:master": "npx hardhat devMasterVerify --network vizing_testnet --show-stack-traces",
     "verify:slave": "npx hardhat  devSlaveVerify --network arbitrum_sepolia && npx hardhat  devSlaveVerify --network polygon_zkevm_cardona",
     
+    "devSupply": "npx hardhat devSupply --network vizing_testnet && npx hardhat devSupply --network arbitrum_sepolia  && npx hardhat devSupply --network polygon_zkevm_cardona",
+
     "flatten:TokenMaster": "npx hardhat flatten contracts/TokenMaster.sol>flatten/TokenMaster.sol",
     "flatten:TokenSlave": "npx hardhat flatten contracts/TokenSlave.sol>flatten/TokenSlave.sol"
   },

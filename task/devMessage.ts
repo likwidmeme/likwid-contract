@@ -14,6 +14,10 @@ export default async (
     console.log(`master(${instance.address})`);
 
     console.log(`claimDebitAmount(${await instance.claimDebitAmount()})`);
+    console.log(`poolInitNative(${await instance.poolInitNative()})`);
+    console.log(`poolInitSupply(${await instance.poolInitSupply()})`);
+    console.log(`getReserves(${await instance.getReserves()})`);
+
 
   }
   // }
