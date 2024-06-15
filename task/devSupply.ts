@@ -16,7 +16,7 @@ export default async (args: { validator: string }, hre: HardhatRuntimeEnvironmen
   if (chain == 'vizing_testnet') {
     const masterAddr = getDeploymentAddresses(chain)['TokenMaster'];
     const master = await ethers.getContractAt('TokenMaster', masterAddr);
-    console.log(`Chain(Vizing)`);
+    console.log(`Chain(vizing_testnet)`);
     console.log(`Contract(${master.address})`);
     console.log(`totalSupply:\n${await master.totalSupply()}`);
   }
