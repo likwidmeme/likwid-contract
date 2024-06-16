@@ -244,10 +244,9 @@ contract MasterTokenBase is ERC314PlusCore {
 
     function _computeClaim(uint64 srcChainId, address target) internal view virtual returns (uint refund, uint amount) {
         refund = presaleRefundRatio == 0 ? 0 : (slaveDeposited[srcChainId][target] * presaleRefundRatio) / 1 ether;
-        uint offset = 1;
+        uint offset = refund % 2 == 1 ? 1 : 0;
         uint fund = slaveDeposited[srcChainId][target] - refund - offset;
         amount = presaleNative == 0 ? 0 : (presaleSupply * fund) / presaleNative;
-        refund = refund - offset;
     }
 
     function presaleOf(
