@@ -144,7 +144,7 @@ contract MasterTokenBase is ERC314PlusCore {
         bool _buy
     ) internal view returns (uint amount, uint fee) {
         if (value == 0) return (0, 0);
-        if (!launched || (launched && (poolInitNative() == 0 || reserveETH == 0 || reserveToken == 0))) return (0, 0);
+        if (!launched || (launched && (poolInitNative() == 0))) return (0, 0);
         if (_buy) {
             if (value + reserveETH >= poolInitNative()) {
                 amount = reserveToken - (poolInitNative() * poolInitSupply()) / (value + reserveETH);
