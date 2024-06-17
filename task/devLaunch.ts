@@ -11,9 +11,9 @@ export default async (args: { validator: string }, hre: HardhatRuntimeEnvironmen
     console.log(`master(${instance.address})`);
     const total = hre.ethers.utils.parseEther('2000000');
     const presale = hre.ethers.utils.parseEther('1000000');
-    const refundRadio = hre.ethers.utils.parseEther('0.9987');
+    const refundRadio = hre.ethers.utils.parseEther('0.0909');
     if (!(await instance.launched())) {
-      const tx1 = await instance!.launch(total, presale, refundRadio, deployer);
+      const tx1 = await instance!.launch(total, presale, refundRadio, deployer.address);
       console.log(`pending tx ${tx1.hash}`);
       await tx1.wait();
       for (const chainId of [421614, 2442 ]) {
