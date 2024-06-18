@@ -6,7 +6,7 @@ export default async (args: { validator: string }, hre: HardhatRuntimeEnvironmen
   const [deployer] = await ethers.getSigners();
   const chain = hre.network.name;
   let instance: types.contracts.TokenMaster | types.contracts.TokenSlave;
-  if (chain == 'vizing_testnet') {
+  if (chain == 'Vizing') {
     instance = await ethers.getContractAt('TokenMaster', (await deployments.get('TokenMaster')).address);
     console.log(`master(${instance.address})`);
 

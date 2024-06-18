@@ -5,8 +5,8 @@ export default async (args: { validator: string }, hre: HardhatRuntimeEnvironmen
   const { ethers, getNamedAccounts, deployments } = hre;
   const [deployer] = await ethers.getSigners();
   const chain = hre.network.name;
-  const slaveChains = ['arbitrum_sepolia', 'polygon_zkevm_cardona'];
-  if (chain == 'vizing_testnet') {
+  const slaveChains = ['Base', 'Linea', 'Scroll', 'Optimism', 'Arbitrum', 'zkEVM', 'Blast', 'Bob'];
+  if (chain == 'Vizing') {
     for (const chainName of slaveChains) {
       const slaveAddr = getDeploymentAddresses(chainName)['TokenSlave'];
       const master = await ethers.getContractAt('TokenMaster', (await deployments.get('TokenMaster')).address);
@@ -17,7 +17,7 @@ export default async (args: { validator: string }, hre: HardhatRuntimeEnvironmen
     }
   }
   if (slaveChains.includes(chain)) {
-    const masterAddr = getDeploymentAddresses('vizing_testnet')['TokenMaster'];
+    const masterAddr = getDeploymentAddresses('Vizing')['TokenMaster'];
     const slave = await ethers.getContractAt('TokenSlave', (await deployments.get('TokenSlave')).address);
     console.log(
       `master(${masterAddr}),slave(${

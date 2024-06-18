@@ -8,18 +8,32 @@
     "test": "set TS_NODE_TRANSPILE_ONLY=1&&npx hardhat test",
     "test:gas": "cross-env REPORT_GAS=true npx hardhat test",
     "coverage": "npx hardhat coverage",
-    
-    "deploy:vizing_testnet": "npx hardhat deploy --network vizing_testnet --tags dev",
-    "deploy:arbitrum_sepolia": "npx hardhat deploy --network arbitrum_sepolia --tags dev",
-    "deploy:polygon_zkevm_cardona": "npx hardhat deploy --network polygon_zkevm_cardona --tags dev",
-    
-    "deploy:dev": "npm run deploy:vizing_testnet && npm run deploy:arbitrum_sepolia && npm run deploy:polygon_zkevm_cardona",
-    "devAdapter": "npx hardhat devAdapter --network vizing_testnet && npx hardhat devAdapter --network arbitrum_sepolia && npx hardhat devAdapter --network polygon_zkevm_cardona",
-    
-    "verify:master": "npx hardhat devMasterVerify --network vizing_testnet --show-stack-traces",
-    "verify:slave": "npx hardhat  devSlaveVerify --network arbitrum_sepolia && npx hardhat  devSlaveVerify --network polygon_zkevm_cardona",
-    
-    "devSupply": "npx hardhat devSupply --network vizing_testnet && npx hardhat devSupply --network arbitrum_sepolia  && npx hardhat devSupply --network polygon_zkevm_cardona",
+    "deploy:Base": "npx hardhat deploy --network Base --tags dev",
+    "deploy:Vizing": "npx hardhat deploy --network Vizing --tags dev",
+    "deploy:Linea": "npx hardhat deploy --network Linea --tags dev",
+    "deploy:Scroll": "npx hardhat deploy --network Scroll --tags dev",
+    "deploy:Optimism": "npx hardhat deploy --network Optimism --tags dev",
+    "deploy:Arbitrum": "npx hardhat deploy --network Arbitrum --tags dev",
+    "deploy:zkEVM": "npx hardhat deploy --network zkEVM --tags dev",
+    "deploy:Blast": "npx hardhat deploy --network Blast --tags dev",
+    "deploy:Bob": "npx hardhat deploy --network Bob --tags dev",  
+
+    "deploy:dev": "npm run deploy:Vizing && npm run deploy:Base && npm run deploy:Linea && npm run deploy:Scroll && npm run deploy:Optimism && npm run deploy:Arbitrum && npm run deploy:zkEVM && npm run deploy:Blast && npm run deploy:Bob",
+    "devAdapter": "npx hardhat devAdapter --network Vizing && npx hardhat devAdapter --network Base && npx hardhat devAdapter --network Linea && npx hardhat devAdapter --network Scroll && npx hardhat devAdapter --network Optimism && npx hardhat devAdapter --network Arbitrum && npx hardhat devAdapter --network zkEVM && npx hardhat devAdapter --network Blast && npx hardhat devAdapter --network Bob",
+  
+    "verify:slave:Arbitrum": "npx hardhat  devSlaveVerify --network Arbitrum",
+    "verify:slave:Base": "npx hardhat  devSlaveVerify --network Base",
+    "verify:slave:Bob": "npx hardhat  devSlaveVerify --network Bob",
+    "verify:slave:Linea": "npx hardhat  devSlaveVerify --network Linea",
+    "verify:slave:Scroll": "npx hardhat  devSlaveVerify --network Scroll",
+    "verify:slave:Blast": "npx hardhat  devSlaveVerify --network Blast",
+    "verify:slave:Optimism": "npx hardhat  devSlaveVerify --network Optimism",
+    "verify:slave:zkEVM": "npx hardhat  devSlaveVerify --network zkEVM",
+
+    "devSupply": "npx hardhat devSupply --network Vizing && npx hardhat devSupply --network Base  && npx hardhat devSupply --network Linea && npx hardhat devSupply --network Scroll && npx hardhat devSupply --network Optimism && npx hardhat devSupply --network Arbitrum && npx hardhat devSupply --network zkEVM && npx hardhat devSupply --network Blast && npx hardhat devSupply --network Bob",
+
+    "verify:master": "npx hardhat devMasterVerify --network Vizing --show-stack-traces",
+    "verify:slave": "npm run verify:slave:Arbitrum && npm run verify:slave:Base && npm run verify:slave:Bob && npm run verify:slave:Linea && npm run verify:slave:Scroll && npm run verify:slave:Blast && npm run verify:slave:Optimism && npm run verify:slave:zkEVM",
 
     "flatten:TokenMaster": "npx hardhat flatten contracts/TokenMaster.sol>flatten/TokenMaster.sol",
     "flatten:TokenSlave": "npx hardhat flatten contracts/TokenSlave.sol>flatten/TokenSlave.sol"
@@ -36,12 +50,12 @@
     "@openzeppelin/contracts-v4.4": "npm:@openzeppelin/contracts@4.4.1",
     "@openzeppelin/hardhat-upgrades": "^1.19.0",
     "@types/node-fetch": "^2.6.2",
-    "@vizing/contracts": "^1.1.4",
+    "@vizing/contracts": "^1.1.0",
     "bignumber.js": "^9.1.1",
     "cross-env": "^7.0.3",
     "dotenv": "^16.0.1",
     "eslint": "^8.38.0",
-    "hardhat": "^2.22.5",
+    "hardhat": "^2.10.0",
     "hardhat-deploy": "^0.11.11",
     "hardhat-tracer": "^1.3.0",
     "moment-timezone": "^0.5.34",

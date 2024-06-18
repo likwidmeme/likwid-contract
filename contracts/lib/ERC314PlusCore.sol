@@ -74,9 +74,9 @@ abstract contract ERC314PlusCore is ERC20, Ownable, ReentrancyGuard, VizingOmni,
     bool public launched;
     uint public messageReceived;
     address public feeAddress;
-    uint public totalSupplyInit = 2000000 ether;
-    uint public launchFunds = 1 ether;
-    uint public launchHardCap = 3 ether;
+    uint public totalSupplyInit = 20000000 ether;
+    uint public launchFunds = 10 ether;
+    uint public launchHardCap = 8000 ether;
     uint public tokenomics = 2;
     address public airdropAddr;
     function setFeeAddress(address addr) public virtual onlyOwner {
@@ -90,7 +90,7 @@ abstract contract ERC314PlusCore is ERC20, Ownable, ReentrancyGuard, VizingOmni,
     }
 
     uint MAX_INT = 2 ** 256 - 1;
-    uint public nativeMax = 5 ether;
+    uint public nativeMax = 50 ether;
     function setNativeMax(uint amount) public virtual onlyOwner {
         nativeMax = amount;
     }
@@ -104,7 +104,7 @@ abstract contract ERC314PlusCore is ERC20, Ownable, ReentrancyGuard, VizingOmni,
     function setTokenMin(uint amount) public virtual onlyOwner {
         tokenMin = amount;
     }
-    uint public launchTime = block.timestamp + 3000;//259200 3Days
+    uint public launchTime = 1718956800;
     function setLaunchTime(uint launchTime_) public virtual onlyOwner {
         launchTime = launchTime_;
     }

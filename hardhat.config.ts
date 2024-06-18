@@ -80,60 +80,150 @@ const config: HardhatUserConfig = {
   etherscan: {
     enabled: true,
     apiKey: {
-      arbitrum_sepolia: getScanApiKey('arbitrum_sepolia'),
-      polygon_zkevm_cardona: getScanApiKey('polygon_zkevm_cardona'),
-      vizing_testnet: 'NULL',
+      Base: getScanApiKey('Base'),
+      Arbitrum: getScanApiKey('Arbitrum'),
+      Linea: getScanApiKey('Linea'),
+      Scroll: getScanApiKey('Scroll'),
+      Blast: getScanApiKey('Blast'),
+      Optimism: getScanApiKey('Optimism'),
+      zkEVM: getScanApiKey('zkEVM'),
+      Vizing: 'NULL',
+      Bob: 'NULL',
     },
     customChains: [
       {
-        network: 'arbitrum_sepolia',
-        chainId: 421614,
+        network: 'Base',
+        chainId: 8453,
         urls: {
-          apiURL: 'https://api-sepolia.arbiscan.io/api',
-          browserURL: 'https://sepolia.arbiscan.io/',
+          apiURL: 'https://api.basescan.org/api',
+          browserURL: 'https://basescan.org/',
         },
       },
       {
-        network: 'vizing_testnet',
-        chainId: 28516,
+        network: 'Arbitrum',
+        chainId: 42161,
         urls: {
-          apiURL: 'https://explorer-sepolia.vizing.com/api',
-          browserURL: 'https://explorer-sepolia.vizing.com/',
+          apiURL: 'https://api.arbiscan.io/api',
+          browserURL: 'https://arbiscan.io/',
         },
       },
       {
-        network: 'polygon_zkevm_cardona',
-        chainId: 2442,
+        network: 'Linea',
+        chainId: 59144,
         urls: {
-          apiURL: 'https://api-cardona-zkevm.polygonscan.com/api',
-          browserURL: 'https://cardona-zkevm.polygonscan.com/',
+          apiURL: 'https://api.lineascan.build/api',
+          browserURL: 'https://lineascan.build/',
+        },
+      },
+      {
+        network: 'Scroll',
+        chainId: 534352,
+        urls: {
+          apiURL: 'https://api.scrollscan.com/api',
+          browserURL: 'https://scrollscan.com/',
+        },
+      },
+      {
+        network: 'Blast',
+        chainId: 81457,
+        urls: {
+          apiURL: 'https://api.blastscan.io/api',
+          browserURL: 'https://blastscan.io/',
+        },
+      },
+      {
+        network: 'Optimism',
+        chainId: 10,
+        urls: {
+          apiURL: 'https://api-optimistic.etherscan.io/api',
+          browserURL: 'https://optimistic.etherscan.io/',
+        },
+      },
+      {
+        network: 'zkEVM',
+        chainId: 1101,
+        urls: {
+          apiURL: 'https://api-zkevm.polygonscan.com/api',
+          browserURL: 'https://zkevm.polygonscan.com/',
+        },
+      },
+      {
+        network: 'Vizing',
+        chainId: 28518,
+        urls: {
+          apiURL: 'https://explorer-api.vizing.com/api',
+          browserURL: 'https://explorer.vizing.com/',
+        },
+      },
+      {
+        network: 'Bob',
+        chainId: 60808,
+        urls: {
+          apiURL: 'https://explorer.gobob.xyz/api',
+          browserURL: 'https://explorer.gobob.xyz/',
         },
       },
     ],
   },
-  
+
   networks: {
     hardhat: {},
     localhost: {
       accounts: accounts(),
     },
-    arbitrum_sepolia: {
-      url: 'https://sepolia-rollup.arbitrum.io/rpc',
-      chainId: 421614,
+    Base: {
+      url: 'https://mainnet.base.org',
+      chainId: 8453,
       accounts: accounts(),
-      gasMultiplier: 1.5,
+      gasMultiplier: 1.2,
     },
-    vizing_testnet: {
-      url: 'https://rpc-sepolia.vizing.com',
-      chainId: 28516,
+    Vizing: {
+      url: 'https://rpc.vizing.com',
+      chainId: 28518,
       accounts: accounts(),
-      gasMultiplier: 1.5,
+      gasMultiplier: 1.2,
     },
-    polygon_zkevm_cardona: {
-      url: 'https://rpc.cardona.zkevm-rpc.com',
-      chainId: 2442,
+    Linea: {
+      url: 'https://rpc.linea.build',
+      chainId: 59144,
       accounts: accounts(),
-      gasMultiplier: 1.5,
+      gasMultiplier: 1.2,
+    },
+    Scroll: {
+      url: 'https://rpc.scroll.io',
+      chainId: 534352,
+      accounts: accounts(),
+      gasMultiplier: 1.2,
+    },
+    Optimism: {
+      url: 'https://mainnet.optimism.io',
+      chainId: 10,
+      accounts: accounts(),
+      gasMultiplier: 1.2,
+    },
+    Arbitrum: {
+      url: 'https://arbitrum-one.publicnode.com',
+      chainId: 42161,
+      accounts: accounts(),
+      gasMultiplier: 1.2,
+    },
+    zkEVM: {
+      url: 'https://zkevm-rpc.com',
+      chainId: 1101,
+      accounts: accounts(),
+      gasMultiplier: 1.2,
+    },
+    Blast: {
+      url: 'https://rpc.blast.io',
+      chainId: 81457,
+      accounts: accounts(),
+      gasMultiplier: 1.2,
+    },
+    Bob: {
+      url: 'https://rpc.gobob.xyz',
+      chainId: 60808,
+      accounts: accounts(),
+      gasMultiplier: 1.2,
     },
   },
   gasReporter: {
