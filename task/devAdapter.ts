@@ -19,11 +19,11 @@ export default async (args: { validator: string }, hre: HardhatRuntimeEnvironmen
   if (slaveChains.includes(chain)) {
     const masterAddr = getDeploymentAddresses('Vizing')['TokenMaster'];
     const slave = await ethers.getContractAt('TokenSlave', (await deployments.get('TokenSlave')).address);
+    await (await slave.setMasterContract(masterAddr)).wait();
     console.log(
       `master(${masterAddr}),slave(${
         slave.address
       }),slave.masterChainId(${await slave.masterChainId()}),slave.masterContract(${await slave.masterContract()})`,
     );
-    await (await slave.setMasterContract(masterAddr)).wait();
   }
 };
