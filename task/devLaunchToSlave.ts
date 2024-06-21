@@ -11,7 +11,7 @@ export default async (args: { validator: string }, hre: HardhatRuntimeEnvironmen
     console.log(`master(${instance.address})`);
     if (instance.launched()) { 
       // ALL Slave Chains ID
-      for (const chainId of [8453, 59144, 534352, 10, 42161, 1101, 81457, 60808 ]) {
+      for (const chainId of [60808, 10, 8453, 59144, 534352, 42161, 1101, 81457]) {
         const pingFee = await instance.launchToSlaveEstimateGas(chainId);
         const tx2 = await instance!.launchToSlave(chainId, { value: pingFee });
         console.log(`pending tx ${tx2.hash}`);
