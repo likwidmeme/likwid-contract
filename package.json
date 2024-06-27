@@ -17,9 +17,10 @@
     "deploy:zkEVM": "npx hardhat deploy --network zkEVM --tags dev",
     "deploy:Blast": "npx hardhat deploy --network Blast --tags dev",
     "deploy:Bob": "npx hardhat deploy --network Bob --tags dev",  
+    "deploy:Taiko": "npx hardhat deploy --network Taiko --tags dev",  
 
-    "deploy:dev": "npm run deploy:Vizing && npm run deploy:Base && npm run deploy:Linea && npm run deploy:Scroll && npm run deploy:Optimism && npm run deploy:Arbitrum && npm run deploy:zkEVM && npm run deploy:Blast && npm run deploy:Bob",
-    "devAdapter": "npx hardhat devAdapter --network Vizing && npx hardhat devAdapter --network Base && npx hardhat devAdapter --network Linea && npx hardhat devAdapter --network Scroll && npx hardhat devAdapter --network Optimism && npx hardhat devAdapter --network Arbitrum && npx hardhat devAdapter --network zkEVM && npx hardhat devAdapter --network Blast && npx hardhat devAdapter --network Bob",
+    "deploy:dev": "npm run deploy:Vizing && npm run deploy:Base && npm run deploy:Linea && npm run deploy:Scroll && npm run deploy:Optimism && npm run deploy:Arbitrum && npm run deploy:zkEVM && npm run deploy:Blast && npm run deploy:Bob && npm run deploy:Taiko",
+    "devAdapter": "npx hardhat devAdapter --network Vizing && npx hardhat devAdapter --network Base && npx hardhat devAdapter --network Linea && npx hardhat devAdapter --network Scroll && npx hardhat devAdapter --network Optimism && npx hardhat devAdapter --network Arbitrum && npx hardhat devAdapter --network zkEVM && npx hardhat devAdapter --network Blast && npx hardhat devAdapter --network Bob && npx hardhat devAdapter --network Taiko",
   
     "verify:slave:Arbitrum": "npx hardhat  devSlaveVerify --network Arbitrum",
     "verify:slave:Base": "npx hardhat  devSlaveVerify --network Base",
@@ -29,11 +30,12 @@
     "verify:slave:Blast": "npx hardhat  devSlaveVerify --network Blast",
     "verify:slave:Optimism": "npx hardhat  devSlaveVerify --network Optimism",
     "verify:slave:zkEVM": "npx hardhat  devSlaveVerify --network zkEVM",
+    "verify:slave:Taiko": "npx hardhat  devSlaveVerify --network Taiko",
 
     "devSupply": "npx hardhat devSupply --network Vizing && npx hardhat devSupply --network Base  && npx hardhat devSupply --network Linea && npx hardhat devSupply --network Scroll && npx hardhat devSupply --network Optimism && npx hardhat devSupply --network Arbitrum && npx hardhat devSupply --network zkEVM && npx hardhat devSupply --network Blast && npx hardhat devSupply --network Bob",
 
     "verify:master": "npx hardhat devMasterVerify --network Vizing --show-stack-traces",
-    "verify:slave": "npm run verify:slave:Arbitrum && npm run verify:slave:Base && npm run verify:slave:Bob && npm run verify:slave:Linea && npm run verify:slave:Scroll && npm run verify:slave:Blast && npm run verify:slave:Optimism && npm run verify:slave:zkEVM",
+    "verify:slave": "npm run verify:slave:Arbitrum && npm run verify:slave:Base && npm run verify:slave:Bob && npm run verify:slave:Linea && npm run verify:slave:Scroll && npm run verify:slave:Blast && npm run verify:slave:Optimism && npm run verify:slave:zkEVM && npm run verify:slave:Taiko",
 
     "flatten:TokenMaster": "npx hardhat flatten contracts/TokenMaster.sol>flatten/TokenMaster.sol",
     "flatten:TokenSlave": "npx hardhat flatten contracts/TokenSlave.sol>flatten/TokenSlave.sol"

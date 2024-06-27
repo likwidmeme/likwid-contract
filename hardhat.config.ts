@@ -89,6 +89,7 @@ const config: HardhatUserConfig = {
       zkEVM: getScanApiKey('zkEVM'),
       Vizing: 'NULL',
       Bob: 'NULL',
+      Taiko: getScanApiKey('Taiko'),
     },
     customChains: [
       {
@@ -163,6 +164,14 @@ const config: HardhatUserConfig = {
           browserURL: 'https://explorer.gobob.xyz/',
         },
       },
+      {
+        network: 'Taiko',
+        chainId: 167000,
+        urls: {
+          apiURL: 'https://api.taikoscan.io/api',
+          browserURL: 'https://taikoscan.io',
+        },
+      },
     ],
   },
 
@@ -222,6 +231,12 @@ const config: HardhatUserConfig = {
     Bob: {
       url: 'https://rpc.gobob.xyz',
       chainId: 60808,
+      accounts: accounts(),
+      gasMultiplier: 1.2,
+    },
+    Taiko: {
+      url: 'https://rpc.mainnet.taiko.xyz/',
+      chainId: 167000,
       accounts: accounts(),
       gasMultiplier: 1.2,
     },
