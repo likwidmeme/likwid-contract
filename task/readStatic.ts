@@ -3,7 +3,7 @@ import fs from 'fs';
 
 function getDeploymentAddresses(networkName: string) {
   const PROJECT_ROOT = path.resolve(__dirname, '..');
-  const DEPLOYMENT_PATH = path.resolve(PROJECT_ROOT, 'deployments-orbguy');
+  const DEPLOYMENT_PATH = path.resolve(PROJECT_ROOT, 'deployments');
 
   let folderName = networkName;
   if (networkName === 'hardhat') {

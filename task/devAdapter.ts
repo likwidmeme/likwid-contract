@@ -5,7 +5,7 @@ export default async (args: { validator: string }, hre: HardhatRuntimeEnvironmen
   const { ethers, getNamedAccounts, deployments } = hre;
   const [deployer] = await ethers.getSigners();
   const chain = hre.network.name;
-  const slaveChains = ['Base', 'Linea', 'Scroll', 'Optimism', 'Arbitrum', 'zkEVM', 'Blast', 'Bob'];
+  const slaveChains = ['Taiko', 'Base', 'Linea', 'Scroll', 'Optimism', 'Arbitrum', 'zkEVM', 'Blast', 'Bob'];
   if (chain == 'Vizing') {
     for (const chainName of slaveChains) {
       const slaveAddr = getDeploymentAddresses(chainName)['TokenSlave'];

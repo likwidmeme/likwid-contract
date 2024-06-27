@@ -75,7 +75,7 @@ abstract contract ERC314PlusCore is ERC20, Ownable, ReentrancyGuard, VizingOmni,
         uint value,
         bytes memory params
     ) public view virtual returns (uint) {
-        bytes memory message = PacketMessage(
+        bytes memory message = _packetMessage(
             defaultBridgeMode,
             dstContract,
             maxGasLimit,
@@ -93,7 +93,7 @@ abstract contract ERC314PlusCore is ERC20, Ownable, ReentrancyGuard, VizingOmni,
         bytes memory params,
         address sender
     ) internal virtual {
-        bytes memory message = PacketMessage(
+        bytes memory message = _packetMessage(
             defaultBridgeMode,
             dstContract,
             maxGasLimit,
