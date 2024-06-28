@@ -19,6 +19,8 @@ export default async (args: { validator: string }, hre: HardhatRuntimeEnvironmen
       // await tx1.wait();
       for (const chainId of [167000]) {
         const pingFee = await instance.launchToSlaveEstimateGas(chainId);
+        console.log(`pending tx ${pingFee}, chainID is ${chainId}`);
+        
         const tx2 = await instance!.launchToSlave(chainId, { value: pingFee });
         console.log(`pending tx ${tx2.hash}`);
         await tx2.wait();
